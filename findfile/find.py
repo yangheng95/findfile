@@ -7,7 +7,7 @@
 import os
 
 
-def find_files(dir_path: str, key: str, exclude_keys=[], recursive=True) -> list:
+def find_files(search_path: str, key='', exclude_key=None, recursive=True) -> list:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose name contain the 'key',
@@ -16,42 +16,44 @@ def find_files(dir_path: str, key: str, exclude_keys=[], recursive=True) -> list
 
     :return the target files
     '''
+
     res = []
 
-    if exclude_keys and isinstance(exclude_keys, str):
-        exclude_keys = [exclude_keys]
-    else:
-        exclude_keys = []
+    if not exclude_key:
+        exclude_key = []
+    if isinstance(exclude_key, str):
+        exclude_key = [exclude_key]
 
-    if os.path.isfile(dir_path):
-        if key.lower() in dir_path.lower():
-            if exclude_keys:
-                for exclude_key in exclude_keys:
-                    if not (exclude_key and exclude_key in dir_path.lower()):
-                        res.append(dir_path)
+    if isinstance(key, str):
+        key = [key]
+
+    if os.path.isfile(search_path):
+        has_key = True
+        for k in key:
+            if not k.lower() in search_path.lower():
+                has_key = False
+
+        if has_key:
+            if exclude_key:
+                has_exclude_key = False
+                for exclude_key in exclude_key:
+                    if exclude_key.lower() in search_path.lower():
+                        has_exclude_key = True
+                if not has_exclude_key:
+                    res.append(search_path)
             else:
-                res.append(dir_path)
+                res.append(search_path)
 
-    elif os.path.isdir(dir_path):
-        items = os.listdir(dir_path)
+    if os.path.isdir(search_path):
+        items = os.listdir(search_path)
         for file in items:
             if recursive:
-                res += find_files(os.path.join(dir_path, file), key, exclude_keys, recursive)
-            else:
-                if key.lower() in file.lower():
-                    if exclude_keys:
-                        for exclude_key in exclude_keys:
-                            if not (exclude_key and exclude_key in file.lower()):
-                                res.append(dir_path)
-                    else:
-                        res.append(dir_path)
-    if len(res) > 1:
-        print('Warning: multiple targets {} found but return the first'.format(res))
+                res += find_files(os.path.join(search_path, file), key, exclude_key, recursive)
 
     return res
 
 
-def find_file(dir_path: str, key: str, exclude_keys=[], recursive=True) -> str:
+def find_file(search_path: str, key='', exclude_key=None, recursive=True, disable_alert=False) -> str:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose name contain the 'key',
@@ -60,47 +62,60 @@ def find_file(dir_path: str, key: str, exclude_keys=[], recursive=True) -> str:
 
     :return the first target file
     '''
-    res = find_files(dir_path, key, exclude_keys, recursive)
+    res = find_files(search_path, key, exclude_key, recursive)
+
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning: multiple targets {} found but return the first'.format(res))
+
     return res[0] if res else None
 
 
-def find_dirs(dir_path: str, key: str, exclude_keys=[], recursive=True) -> list:
+def find_dirs(search_path: str, key='', exclude_key=None, recursive=True) -> list:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose name contain the 'key',
     'exclude_key': file name contains 'exclude_key' will be ignored
     'recursive' recursive search in dir_path
 
-    :return the target dris
+    :return the target dirs
     '''
     res = []
 
-    if exclude_keys and isinstance(exclude_keys, str):
-        exclude_keys = [exclude_keys]
-    else:
-        exclude_keys = []
+    if not exclude_key:
+        exclude_key = []
+    if isinstance(exclude_key, str):
+        exclude_key = [exclude_key]
 
-    if os.path.isdir(dir_path):
-        if key.lower() in dir_path.lower():
-            if exclude_keys:
-                for exclude_key in exclude_keys:
-                    if not (exclude_key and exclude_key in dir_path.lower()):
-                        res.append(dir_path)
+    if isinstance(key, str):
+        key = [key]
+
+    if os.path.isdir(search_path):
+        has_key = True
+        for k in key:
+            if not k.lower() in search_path.lower():
+                has_key = False
+
+        if has_key:
+            if exclude_key:
+                has_exclude_key = False
+                for exclude_key in exclude_key:
+                    if exclude_key.lower() in search_path.lower():
+                        has_exclude_key = True
+                if not has_exclude_key:
+                    res.append(search_path)
             else:
-                res.append(dir_path)
+                res.append(search_path)
 
-    if recursive:
-        dirs = os.listdir(dir_path)
-        for d in dirs:
-            res += find_file(os.path.join(dir_path, d), key, exclude_keys, recursive)
-
-    if len(res) > 1:
-        print('Warning: multiple targets {} found but return the first'.format(res))
+    if os.path.isdir(search_path):
+        items = os.listdir(search_path)
+        for file in items:
+            if recursive:
+                res += find_dirs(os.path.join(search_path, file), key, exclude_key, recursive)
 
     return res
 
 
-def find_dir(dir_path: str, key: str, exclude_keys=[], recursive=True) -> str:
+def find_dir(search_path: str, key='', exclude_key=None, recursive=True, disable_alert=False) -> str:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose name contain the 'key',
@@ -109,5 +124,9 @@ def find_dir(dir_path: str, key: str, exclude_keys=[], recursive=True) -> str:
 
     :return the first target dir
     '''
-    res = find_dirs(dir_path, key, exclude_keys, recursive)
+    res = find_dirs(search_path, key, exclude_key, recursive)
+
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning: multiple targets {} found but return the first'.format(res))
+
     return res[0] if res else None

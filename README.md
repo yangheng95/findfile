@@ -18,9 +18,9 @@ path_to_search = './'
 
 key = ['target', '.txt']  # str or list, the files whose absolute path contain all the keys in the key are the target files
 
-exclude_keys = ['dev', '.ignore']  # str or list, the files whose absolute path contain any exclude key are ignored
+exclude_key = ['dev', '.ignore']  # str or list, the files whose absolute path contain any exclude key are ignored
 
-target_file = find_file(path_to_search, key, exclude_keys, recursive=True)  # return all the target files, only the first two params are required
+target_file = find_file(path_to_search, key, exclude_keys, recursive=False)  # return all the target files, only the first two params are required
 
 target_files = find_file(path_to_search, key, exclude_keys, recursive=True)  # recursive enable to search in all subdirectories
 
