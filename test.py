@@ -1,17 +1,10 @@
-# findfile - simplified solution of FileNotFoundError
+# -*- coding: utf-8 -*-
+# file: test.py
+# time: 2021/8/5
+# author: yangheng <yangheng@m.scnu.edu.cn>
+# github: https://github.com/yangheng95
+# Copyright (C) 2021. All Rights Reserved.
 
-This is a package for you to locate your target file(s)/dir(s) easily.
-
-# Usage
-## Install
-```
-pip install findfile
-```
-
-## ready to use
-If you have been bothered by FileNotFoundError while the file does exist but misplaced, you can call
-
-```
 from findfile import find_file, find_files, find_dir, find_dirs
 
 search_path = './'
@@ -26,6 +19,4 @@ target_files = find_files(search_path, key, exclude_key, recursive=True)   # ret
 
 target_dir = find_dir(search_path, key, exclude_key)  # search directory instead of file
 
-target_dirs = find_dirs(search_path, key, exclude_key)  # search directories 
-
-
+target_dirs = find_dirs(search_path, key, exclude_key)  # search directories

@@ -32,6 +32,7 @@ def find_files(search_path: str, key='', exclude_key=None, recursive=True) -> li
         for k in key:
             if not k.lower() in search_path.lower():
                 has_key = False
+                break
 
         if has_key:
             if exclude_key:
@@ -94,6 +95,7 @@ def find_dirs(search_path: str, key='', exclude_key=None, recursive=True) -> lis
         for k in key:
             if not k.lower() in search_path.lower():
                 has_key = False
+                break
 
         if has_key:
             if exclude_key:
