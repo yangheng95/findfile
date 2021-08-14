@@ -17,6 +17,9 @@ def find_files(search_path: str, key='', exclude_key=None, recursive=True) -> li
     :return the target files
     '''
 
+    if not search_path:
+        search_path = os.getcwd()
+
     res = []
 
     if not exclude_key:
@@ -80,6 +83,10 @@ def find_dirs(search_path: str, key='', exclude_key=None, recursive=True) -> lis
 
     :return the target dirs
     '''
+
+    if not search_path:
+        search_path = os.getcwd()
+
     res = []
 
     if not exclude_key:
