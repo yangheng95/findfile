@@ -5,10 +5,12 @@
 # github: https://github.com/yangheng95
 # Copyright (C) 2021. All Rights Reserved.
 
+from findfile import __version__, __name__
+
 from setuptools import setup, find_packages
 setup(
-    name='findfile',
-    version='1.2',
+    name=__name__,
+    version=__version__,
     description='This package provides the function to search target file(s)/dir(s) using keyword,'
                 ' alleviating the possibility of failure to find files by specifying relative/absolute path',
 

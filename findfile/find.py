@@ -5,13 +5,13 @@
 # github: https://github.com/yangheng95
 # Copyright (C) 2021. All Rights Reserved.
 import os
-
+import re
 
 def find_files(search_path: str, key='', exclude_key=None, recursive=True) -> list:
     '''
     'dir_path': path to search
-    'key': find a set of files/dirs whose name contain the 'key',
-    'exclude_keys': list or str, file name contains 'exclude_key' will be ignored
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
     'recursive' recursive search in dir_path
 
     :return the target files
@@ -33,16 +33,25 @@ def find_files(search_path: str, key='', exclude_key=None, recursive=True) -> li
     if os.path.isfile(search_path):
         has_key = True
         for k in key:
-            if not k.lower() in search_path.lower():
-                has_key = False
-                break
+            try:
+                if not re.findall(k.lower(), search_path.lower()) or not k.lower() in search_path.lower():
+                    has_key = False
+                    break
+            except re.error:
+                if not k.lower() in search_path.lower():
+                    has_key = False
+                    break
 
         if has_key:
             if exclude_key:
                 has_exclude_key = False
-                for exclude_key in exclude_key:
-                    if exclude_key.lower() in search_path.lower():
-                        has_exclude_key = True
+                for ex_key in exclude_key:
+                    try:
+                        if re.findall(ex_key.lower(), search_path.lower()) or ex_key.lower() in search_path.lower():
+                            has_exclude_key = True
+                    except re.error:
+                        if ex_key.lower() in search_path.lower():
+                            has_exclude_key = True
                 if not has_exclude_key:
                     res.append(search_path)
             else:
@@ -60,8 +69,8 @@ def find_files(search_path: str, key='', exclude_key=None, recursive=True) -> li
 def find_file(search_path: str, key='', exclude_key=None, recursive=True, disable_alert=False) -> str:
     '''
     'dir_path': path to search
-    'key': find a set of files/dirs whose name contain the 'key',
-    'exclude_key': file name contains 'exclude_key' will be ignored
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
     'recursive' recursive search in dir_path
 
     :return the first target file
@@ -77,8 +86,8 @@ def find_file(search_path: str, key='', exclude_key=None, recursive=True, disabl
 def find_dirs(search_path: str, key='', exclude_key=None, recursive=True) -> list:
     '''
     'dir_path': path to search
-    'key': find a set of files/dirs whose name contain the 'key',
-    'exclude_key': file name contains 'exclude_key' will be ignored
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
     'recursive' recursive search in dir_path
 
     :return the target dirs
@@ -100,16 +109,25 @@ def find_dirs(search_path: str, key='', exclude_key=None, recursive=True) -> lis
     if os.path.isdir(search_path):
         has_key = True
         for k in key:
-            if not k.lower() in search_path.lower():
-                has_key = False
-                break
+            try:
+                if not re.findall(k.lower(), search_path.lower()) or not k.lower() in search_path.lower():
+                    has_key = False
+                    break
+            except re.error:
+                if not k.lower() in search_path.lower():
+                    has_key = False
+                    break
 
         if has_key:
             if exclude_key:
                 has_exclude_key = False
-                for exclude_key in exclude_key:
-                    if exclude_key.lower() in search_path.lower():
-                        has_exclude_key = True
+                for ex_key in exclude_key:
+                    try:
+                        if re.findall(ex_key.lower(), search_path.lower()):
+                            has_exclude_key = True
+                    except re.error:
+                        if ex_key.lower() in search_path.lower() or ex_key.lower() in search_path.lower():
+                            has_exclude_key = True
                 if not has_exclude_key:
                     res.append(search_path)
             else:
@@ -127,8 +145,8 @@ def find_dirs(search_path: str, key='', exclude_key=None, recursive=True) -> lis
 def find_dir(search_path: str, key='', exclude_key=None, recursive=True, disable_alert=False) -> str:
     '''
     'dir_path': path to search
-    'key': find a set of files/dirs whose name contain the 'key',
-    'exclude_key': file name contains 'exclude_key' will be ignored
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
     'recursive' recursive search in dir_path
 
     :return the first target dir
@@ -139,3 +157,47 @@ def find_dir(search_path: str, key='', exclude_key=None, recursive=True, disable
         print('FindFile Warning: multiple targets {} found but return the first'.format(res))
 
     return res[0] if res else None
+
+
+def find_cwd_file(key='', exclude_key=None, recursive=True, disable_alert=False):
+    '''
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' recursive search in dir_path
+
+    :return the first target file in current working directory
+    '''
+    return find_file(os.getcwd(), key, exclude_key, recursive, disable_alert)
+
+
+def find_cwd_files(key='', exclude_key=None, recursive=True):
+    '''
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' recursive search in dir_path
+
+    :return the target files in current working directory
+    '''
+    return find_files(os.getcwd(), key, exclude_key, recursive)
+
+
+def find_cwd_dir(key='', exclude_key=None, recursive=True, disable_alert=False):
+    '''
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' recursive search in dir_path
+
+    :return the target dir in current working directory
+    '''
+    return find_dir(os.getcwd(), key, exclude_key, recursive, disable_alert)
+
+
+def find_cwd_dirs(key='', exclude_key=None, recursive=True):
+    '''
+    'key': find a set of files/dirs whose absolute path contain the 'key',
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' recursive search in dir_path
+
+    :return the target dirs in current working directory
+    '''
+    return find_dirs(os.getcwd(), key, exclude_key, recursive)

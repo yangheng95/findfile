@@ -5,8 +5,15 @@
 # github: https://github.com/yangheng95
 # Copyright (C) 2021. All Rights Reserved.
 
-from findfile.find import find_files, find_file, find_dirs, find_dir
+from findfile.find import (find_files,
+                           find_file,
+                           find_dirs,
+                           find_dir,
+                           find_cwd_dir,
+                           find_cwd_file,
+                           find_cwd_dirs,
+                           find_cwd_files)
 
 __name__ = 'findfile'
-__version__ = '0.3'
+__version__ = '1.3'
 
