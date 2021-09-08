@@ -7,6 +7,13 @@
 import os
 import re
 
+def accessible(search_path):
+    try:
+        os.listdir(search_path)
+    except OSError:
+        return False
+    return True
+
 
 def find_files(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True) -> list:
     '''
@@ -72,7 +79,7 @@ def find_files(search_path: str, key='', exclude_key=None, use_regex=False, recu
             else:
                 res.append(search_path)
 
-    if os.path.isdir(search_path):
+    if os.path.isdir(search_path) and accessible(search_path):
         items = os.listdir(search_path)
         for file in items:
             if recursive:
@@ -162,7 +169,7 @@ def find_dirs(search_path: str, key='', exclude_key=None, use_regex=False, recur
             else:
                 res.append(search_path)
 
-    if os.path.isdir(search_path):
+    if os.path.isdir(search_path) and accessible(search_path):
         items = os.listdir(search_path)
         for file in items:
             if recursive:
