@@ -15,7 +15,7 @@ def accessible(search_path):
     return True
 
 
-def find_files(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True) -> list:
+def find_files(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True, return_relative_path=True) -> list:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key',
@@ -75,9 +75,9 @@ def find_files(search_path: str, key='', exclude_key=None, use_regex=False, recu
                             has_exclude_key = True
                             break
                 if not has_exclude_key:
-                    res.append(search_path)
+                    res.append(search_path.replace(os.getcwd()+os.sep, '') if return_relative_path else search_path)
             else:
-                res.append(search_path)
+                res.append(search_path.replace(os.getcwd()+os.sep, '') if return_relative_path else search_path)
 
     if os.path.isdir(search_path) and accessible(search_path):
         items = os.listdir(search_path)
@@ -88,7 +88,7 @@ def find_files(search_path: str, key='', exclude_key=None, use_regex=False, recu
     return res
 
 
-def find_file(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True, disable_alert=False) -> str:
+def find_file(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True, return_relative_path=True, disable_alert=False) -> str:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key',
@@ -97,7 +97,7 @@ def find_file(search_path: str, key='', exclude_key=None, use_regex=False, recur
 
     :return the first target file
     '''
-    res = find_files(search_path, key, exclude_key, use_regex=use_regex, recursive=recursive)
+    res = find_files(search_path, key, exclude_key, use_regex=use_regex, recursive=recursive, return_relative_path=return_relative_path)
 
     if len(res) > 1 and not disable_alert:
         print('FindFile Warning: multiple targets {} found but return the first'.format(res))
@@ -105,7 +105,7 @@ def find_file(search_path: str, key='', exclude_key=None, use_regex=False, recur
     return res[0] if res else None
 
 
-def find_dirs(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True) -> list:
+def find_dirs(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True, return_relative_path=True) -> list:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key',
@@ -165,9 +165,9 @@ def find_dirs(search_path: str, key='', exclude_key=None, use_regex=False, recur
                             has_exclude_key = True
                             break
                 if not has_exclude_key:
-                    res.append(search_path)
+                    res.append(search_path.replace(os.getcwd()+os.sep, '') if return_relative_path else search_path)
             else:
-                res.append(search_path)
+                res.append(search_path.replace(os.getcwd()+os.sep, '') if return_relative_path else search_path)
 
     if os.path.isdir(search_path) and accessible(search_path):
         items = os.listdir(search_path)
@@ -178,7 +178,7 @@ def find_dirs(search_path: str, key='', exclude_key=None, use_regex=False, recur
     return res
 
 
-def find_dir(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True, disable_alert=False) -> str:
+def find_dir(search_path: str, key='', exclude_key=None, use_regex=False, recursive=True, return_relative_path=True, disable_alert=False) -> str:
     '''
     'dir_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key',
@@ -187,7 +187,7 @@ def find_dir(search_path: str, key='', exclude_key=None, use_regex=False, recurs
 
     :return the first target dir
     '''
-    res = find_dirs(search_path, key, exclude_key, use_regex, recursive)
+    res = find_dirs(search_path, key, exclude_key, use_regex, recursive, return_relative_path)
 
     if len(res) > 1 and not disable_alert:
         print('FindFile Warning: multiple targets {} found but return the first'.format(res))
@@ -195,7 +195,7 @@ def find_dir(search_path: str, key='', exclude_key=None, use_regex=False, recurs
     return res[0] if res else None
 
 
-def find_cwd_file(key='', use_regex=False, exclude_key=None, recursive=True, disable_alert=False):
+def find_cwd_file(key='', use_regex=False, exclude_key=None, recursive=True, return_relative_path=True, disable_alert=False):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key',
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -203,10 +203,10 @@ def find_cwd_file(key='', use_regex=False, exclude_key=None, recursive=True, dis
 
     :return the first target file in current working directory
     '''
-    return find_file(os.getcwd(), key, exclude_key, use_regex, recursive, disable_alert)
+    return find_file(os.getcwd(), key, exclude_key, use_regex, recursive, return_relative_path, disable_alert)
 
 
-def find_cwd_files(key='', use_regex=False, exclude_key=None, recursive=True):
+def find_cwd_files(key='', use_regex=False, exclude_key=None, recursive=True, return_relative_path=True):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key',
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -214,10 +214,10 @@ def find_cwd_files(key='', use_regex=False, exclude_key=None, recursive=True):
 
     :return the target files in current working directory
     '''
-    return find_files(os.getcwd(), key, exclude_key, use_regex, recursive)
+    return find_files(os.getcwd(), key, exclude_key, use_regex, recursive, return_relative_path)
 
 
-def find_cwd_dir(key='', use_regex=False, exclude_key=None, recursive=True, disable_alert=False):
+def find_cwd_dir(key='', use_regex=False, exclude_key=None, recursive=True, return_relative_path=True, disable_alert=False):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key',
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -225,10 +225,10 @@ def find_cwd_dir(key='', use_regex=False, exclude_key=None, recursive=True, disa
 
     :return the target dir in current working directory
     '''
-    return find_dir(os.getcwd(), use_regex, key, exclude_key, recursive, disable_alert)
+    return find_dir(os.getcwd(), use_regex, key, exclude_key, recursive, return_relative_path, disable_alert)
 
 
-def find_cwd_dirs(key='', exclude_key=None, use_regex=False, recursive=True):
+def find_cwd_dirs(key='', exclude_key=None, use_regex=False, recursive=True, return_relative_path=True):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key',
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -236,4 +236,4 @@ def find_cwd_dirs(key='', exclude_key=None, use_regex=False, recursive=True):
 
     :return the target dirs in current working directory
     '''
-    return find_dirs(os.getcwd(), key, exclude_key, use_regex, recursive)
+    return find_dirs(os.getcwd(), key, exclude_key, use_regex, recursive, return_relative_path)
