@@ -15,5 +15,5 @@ from findfile.find import (find_files,
                            find_cwd_files)
 
 __name__ = 'findfile'
-__version__ = '1.6'
+__version__ = '1.7.3'
 

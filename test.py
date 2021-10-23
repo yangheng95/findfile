@@ -10,10 +10,14 @@ from findfile import find_file, find_files, find_dir, find_dirs, find_cwd_dir, f
 search_path = './'
 
 key = ['find', '.py']  # str or list, the files whose absolute path contain all the keys in the key are the target files
+# key = ['.']  # str or list, the files whose absolute path contain all the keys in the key are the target files
 
 exclude_key = ['dev', '.ignore']  # str or list, the files whose absolute path contain any exclude key are ignored
 
-target_file = find_file(search_path, key, exclude_key, recursive=False)   # return the first target file, recursive means to search in all subdirectories
+target_file = find_file(search_path, key, exclude_key, recursive=True, return_relative_path=False, use_regex=False, return_deepest_path=True)   # return the first target file, recursive means to search in all subdirectories
+print(target_file)
+
+target_file = find_file(search_path, key, exclude_key, recursive=True, return_relative_path=False, return_deepest_path=False)   # return the first target file, recursive means to search in all subdirectories
 print(target_file)
 
 target_files = find_files(search_path, key, exclude_key, recursive=True)   # return all the target files, only the first param are required
