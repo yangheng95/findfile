@@ -1,5 +1,9 @@
 # findfile - simplified solution of FileNotFoundError
 
+[![Downloads](https://pepy.tech/badge/findfile)](https://pepy.tech/project/findfile)
+[![Downloads](https://pepy.tech/badge/findfile/month)](https://pepy.tech/project/findfile)
+[![Downloads](https://pepy.tech/badge/findfile/week)](https://pepy.tech/project/findfile)
+
 ![PyPI - Python Version](https://img.shields.io/badge/python-3.6-blue.svg) 
 [![PyPI](https://img.shields.io/pypi/v/findfile)](https://pypi.org/project/findfile/)
 [![PyPI_downloads](https://img.shields.io/pypi/dm/findfile)](https://pypi.org/project/findfile/)
