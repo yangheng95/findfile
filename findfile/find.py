@@ -16,6 +16,8 @@ def accessible(search_path):
         return False
     return True
 
+def covert_path_sep(path):
+    return path.replace('/', os.sep)
 
 def find_files(search_path: str,
                key='',
@@ -32,6 +34,9 @@ def find_files(search_path: str,
 
     :return the files whose path contains the key(s)
     '''
+
+    if not use_regex:
+        search_path = covert_path_sep(search_path)
 
     if not search_path:
         search_path = os.getcwd()
@@ -145,6 +150,9 @@ def find_dirs(search_path: str,
 
     :return the dirs whose path contains the key(s)
     '''
+
+    if not use_regex:
+        search_path = covert_path_sep(search_path)
 
     if not search_path:
         search_path = os.getcwd()
