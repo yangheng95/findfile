@@ -7,6 +7,7 @@
 import os
 import re
 from functools import reduce
+from pathlib import Path
 
 
 def accessible(search_path):
@@ -17,10 +18,15 @@ def accessible(search_path):
     return True
 
 def covert_path_sep(key_list):
+    if isinstance(key_list, str):
+        key_list = [key_list]
     new_key_list = []
     for key in key_list:
-        new_key_list.append(key.replace('/', os.sep))
-    return new_key_list
+        if key and os.path.splitext(key):
+            new_key_list.append(os.path.split(Path(key)))
+        else:
+            new_key_list.append(key)
+    return key_list
 
 def find_files(search_path: str,
                key='',
