@@ -12,7 +12,11 @@ from findfile.find import (find_files,
                            find_cwd_dir,
                            find_cwd_file,
                            find_cwd_dirs,
-                           find_cwd_files)
+                           find_cwd_files,
+                           rm_dirs,
+                           rm_files,
+                           rm_dir,
+                           rm_file)
 
 __name__ = 'findfile'
 __version__ = '1.7.6'

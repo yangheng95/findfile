@@ -5,7 +5,7 @@
 # github: https://github.com/yangheng95
 # Copyright (C) 2021. All Rights Reserved.
 
-from findfile import find_file, find_files, find_dir, find_dirs, find_cwd_dir, find_cwd_dirs, find_cwd_file, find_cwd_files
+from findfile import find_file, find_files, find_dir, find_dirs, find_cwd_dir, find_cwd_dirs, find_cwd_file, find_cwd_files, rm_file, rm_files, rm_dir, rm_dirs
 
 search_path = './'
 
@@ -28,3 +28,11 @@ print(target_dir)
 
 target_dirs = find_dirs(search_path, key, exclude_key)  # search directories
 print(target_dirs)
+
+# rm_file(key=['findfile', 'lib'])
+# rm_files(key=['findfile', 'lib'])
+# rm_dir(key=['dist'])
+# rm_dirs(key=['dist'])
+# rm_dir(or_key=['dist', 'egg'])
+rm_dirs(or_key=['dist', 'egg'])
+

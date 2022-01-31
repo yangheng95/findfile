@@ -6,6 +6,7 @@
 # Copyright (C) 2021. All Rights Reserved.
 import os
 import re
+import shutil
 from functools import reduce
 from pathlib import Path
 
@@ -16,6 +17,7 @@ def accessible(search_path):
     except OSError:
         return False
     return True
+
 
 def covert_path_sep(key_list):
     if isinstance(key_list, str):
@@ -28,12 +30,14 @@ def covert_path_sep(key_list):
             new_key_list.append(key)
     return key_list
 
+
 def find_files(search_path: str,
                key='',
                exclude_key=None,
                use_regex=False,
                recursive=True,
-               return_relative_path=True) -> list:
+               return_relative_path=True,
+               **kwargs) -> list:
     '''
     'search_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -43,9 +47,6 @@ def find_files(search_path: str,
 
     :return the files whose path contains the key(s)
     '''
-
-    if not use_regex:
-        key = covert_path_sep(key)
 
     if not search_path:
         search_path = os.getcwd()
@@ -117,7 +118,8 @@ def find_file(search_path: str,
               recursive=True,
               return_relative_path=True,
               return_deepest_path=False,
-              disable_alert=False) -> str:
+              disable_alert=False,
+              **kwargs) -> str:
     '''
     'search_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -149,7 +151,8 @@ def find_dirs(search_path: str,
               exclude_key=None,
               use_regex=False,
               recursive=True,
-              return_relative_path=True) -> list:
+              return_relative_path=True,
+              **kwargs) -> list:
     '''
     'search_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -159,9 +162,6 @@ def find_dirs(search_path: str,
 
     :return the dirs whose path contains the key(s)
     '''
-
-    if not use_regex:
-        key = covert_path_sep(key)
 
     if not search_path:
         search_path = os.getcwd()
@@ -233,7 +233,8 @@ def find_dir(search_path: str,
              recursive=True,
              return_relative_path=True,
              return_deepest_path=False,
-             disable_alert=False) -> str:
+             disable_alert=False,
+             **kwargs) -> str:
     '''
     'search_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -266,7 +267,8 @@ def find_cwd_file(key='',
                   recursive=True,
                   return_relative_path=True,
                   return_deepest_path=False,
-                  disable_alert=False):
+                  disable_alert=False,
+                  **kwargs):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -284,14 +286,16 @@ def find_cwd_file(key='',
                      recursive=recursive,
                      return_relative_path=return_relative_path,
                      return_deepest_path=return_deepest_path,
-                     disable_alert=disable_alert)
+                     disable_alert=disable_alert,
+                     **kwargs)
 
 
 def find_cwd_files(key='',
                    use_regex=False,
                    exclude_key=None,
                    recursive=True,
-                   return_relative_path=True):
+                   return_relative_path=True,
+                   **kwargs):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -305,7 +309,8 @@ def find_cwd_files(key='',
                       exclude_key=exclude_key,
                       use_regex=use_regex,
                       recursive=recursive,
-                      return_relative_path=return_relative_path)
+                      return_relative_path=return_relative_path,
+                      **kwargs)
 
 
 def find_cwd_dir(key='',
@@ -314,7 +319,8 @@ def find_cwd_dir(key='',
                  recursive=True,
                  return_relative_path=True,
                  return_deepest_path=False,
-                 disable_alert=False):
+                 disable_alert=False,
+                 **kwargs):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key',
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -333,14 +339,16 @@ def find_cwd_dir(key='',
                     recursive=recursive,
                     return_relative_path=return_relative_path,
                     return_deepest_path=return_deepest_path,
-                    disable_alert=disable_alert)
+                    disable_alert=disable_alert,
+                    **kwargs)
 
 
 def find_cwd_dirs(key='',
                   exclude_key=None,
                   use_regex=False,
                   recursive=True,
-                  return_relative_path=True):
+                  return_relative_path=True,
+                  **kwargs):
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
@@ -354,4 +362,172 @@ def find_cwd_dirs(key='',
                      exclude_key=exclude_key,
                      use_regex=use_regex,
                      recursive=recursive,
-                     return_relative_path=return_relative_path)
+                     return_relative_path=return_relative_path,
+                     **kwargs)
+
+
+def rm_files(path=None, key=None, exclude_key=None, **kwargs):
+    if not path:
+        path = os.getcwd()
+
+    or_key = kwargs.pop('or_key', '')
+    if or_key and key:
+        raise ValueError('The key and or_key arg are contradictory!')
+
+    if key:
+        fs = find_files(search_path=path,
+                        key=key,
+                        exclude_key=exclude_key,
+                        use_regex=False,
+                        recursive=True,
+                        return_relative_path=True,
+                        **kwargs)
+
+        print('FindFile Warning: Remove file', fs)
+
+        for f in fs:
+            os.remove(f)
+
+    if or_key:
+        fs = []
+        for or_key in or_key:
+            fs += find_files(search_path=path,
+                             key=or_key,
+                             exclude_key=exclude_key,
+                             use_regex=False,
+                             recursive=True,
+                             return_relative_path=True,
+                             **kwargs)
+
+        print('FindFile Warning: Remove file', fs)
+
+        for f in fs:
+            os.remove(f)
+
+
+def rm_dirs(path=None, key=None, exclude_key=None, **kwargs):
+    if not path:
+        path = os.getcwd()
+
+    or_key = kwargs.pop('or_key', '')
+    if or_key and key:
+        raise ValueError('The key and or_key arg are contradictory!')
+
+    if key:
+        ds = find_dirs(search_path=path,
+                       key=key,
+                       exclude_key=exclude_key,
+                       use_regex=False,
+                       recursive=True,
+                       return_relative_path=True,
+                       **kwargs)
+
+        print('FindFile Warning: Remove dir', ds)
+
+        for d in ds:
+            shutil.rmtree(d)
+
+    if or_key:
+        ds = []
+        for or_key in or_key:
+            ds += find_dirs(search_path=path,
+                            key=or_key,
+                            exclude_key=exclude_key,
+                            use_regex=False,
+                            recursive=True,
+                            return_relative_path=True,
+                            **kwargs)
+
+        print('FindFile Warning: Remove dir', ds)
+
+        for d in ds:
+            shutil.rmtree(d)
+
+
+def rm_file(path=None, key=None, exclude_key=None, **kwargs):
+    if not path:
+        path = os.getcwd()
+
+    or_key = kwargs.pop('or_key', '')
+    if or_key and key:
+        raise ValueError('The key and or_key arg are contradictory!')
+
+    if key:
+        fs = find_files(search_path=path,
+                        key=key,
+                        exclude_key=exclude_key,
+                        use_regex=False,
+                        recursive=True,
+                        return_relative_path=True,
+                        **kwargs)
+
+        if len(fs) > 1:
+            raise ValueError('Multi-files detected while removing single file.')
+
+        print('FindFile Warning: Remove file', fs)
+
+        for f in fs:
+            os.remove(f)
+
+    if or_key:
+        fs = []
+        for or_key in or_key:
+            fs += find_files(search_path=path,
+                             key=or_key,
+                             exclude_key=exclude_key,
+                             use_regex=False,
+                             recursive=True,
+                             return_relative_path=True,
+                             **kwargs)
+        if len(fs) > 1:
+            raise ValueError('Multi-files detected while removing single file.')
+
+        print('FindFile Warning: Remove file', fs)
+
+        for f in fs:
+            os.remove(f)
+
+
+def rm_dir(path=None, key=None, exclude_key=None, **kwargs):
+    if not path:
+        path = os.getcwd()
+
+    or_key = kwargs.pop('or_key', '')
+    if or_key and key:
+        raise ValueError('The key and or_key arg are contradictory!')
+
+    if key:
+        ds = find_dirs(search_path=path,
+                       key=key,
+                       exclude_key=exclude_key,
+                       use_regex=False,
+                       recursive=True,
+                       return_relative_path=True,
+                       **kwargs)
+
+        if len(ds) > 1:
+            raise ValueError('Multi-dirs detected while removing single file.')
+
+        print('FindFile Warning: Remove dir', ds)
+
+        for d in ds:
+            shutil.rmtree(d)
+
+    if or_key:
+        ds = []
+        for or_key in or_key:
+            ds += find_dirs(search_path=path,
+                            key=or_key,
+                            exclude_key=exclude_key,
+                            use_regex=False,
+                            recursive=True,
+                            return_relative_path=True,
+                            **kwargs)
+
+        if len(ds) > 1:
+            raise ValueError('Multi-dirs detected while removing single file.')
+
+        print('FindFile Warning: Remove dir', ds)
+
+        for d in ds:
+            shutil.rmtree(d)
