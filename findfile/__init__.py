@@ -19,5 +19,4 @@ from findfile.find import (find_files,
                            rm_file)
 
 __name__ = 'findfile'
-__version__ = '1.7.6'
-
+__version__ = '1.7.8'
