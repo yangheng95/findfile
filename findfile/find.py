@@ -463,24 +463,24 @@ def find_cwd_dir(and_key=None,
         if or_key and key:
             raise ValueError('The key and or_key arg are contradictory!')
         for key in or_key:
-            res += find_dir(search_path=os.getcwd(),
-                            key=key,
-                            exclude_key=exclude_key,
-                            use_regex=use_regex,
-                            return_relative_path=return_relative_path,
-                            return_deepest_path=False,
-                            disable_alert=False,
-                            **kwargs)
+            res += _find_dirs(search_path=os.getcwd(),
+                              key=key,
+                              exclude_key=exclude_key,
+                              use_regex=use_regex,
+                              return_relative_path=return_relative_path,
+                              return_deepest_path=False,
+                              disable_alert=False,
+                              **kwargs)
 
     else:
-        res = find_dir(search_path=os.getcwd(),
-                       key=key,
-                       exclude_key=exclude_key,
-                       use_regex=use_regex,
-                       return_relative_path=return_relative_path,
-                       return_deepest_path=False,
-                       disable_alert=False,
-                       **kwargs)
+        res = _find_dirs(search_path=os.getcwd(),
+                         key=key,
+                         exclude_key=exclude_key,
+                         use_regex=use_regex,
+                         return_relative_path=return_relative_path,
+                         return_deepest_path=False,
+                         disable_alert=False,
+                         **kwargs)
 
     if len(res) > 1 and not disable_alert:
         print('FindFile Warning: multiple targets {} found but return the {} path'.format(res, 'deepest' if return_deepest_path else 'shortest'))
