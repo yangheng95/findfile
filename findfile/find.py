@@ -11,6 +11,8 @@ from functools import reduce
 from pathlib import Path
 from typing import Union
 
+from termcolor import colored
+
 
 def accessible(search_path):
     try:
@@ -42,7 +44,7 @@ def _find_files(search_path: Union[str, Path],
     'search_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
 
     :return the files whose path contains the key(s)
@@ -130,7 +132,7 @@ def find_file(search_path: Union[str, Path],
     'search_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
     'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
     'disable_alert' no alert if multiple targets found
@@ -145,12 +147,13 @@ def find_file(search_path: Union[str, Path],
                       return_relative_path=return_relative_path,
                       **kwargs)
 
-    if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found but return the {} path'.format(res, 'deepest' if return_deepest_path else 'shortest'))
     if not return_deepest_path:
-        return reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
     else:
-        return reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+    return _res
 
 
 def _find_dirs(search_path: Union[str, Path],
@@ -251,7 +254,7 @@ def find_dir(search_path: Union[str, Path],
     'search_path': path to search
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
     'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
     'disable_alert' no alert if multiple targets found
@@ -285,17 +288,18 @@ def find_dir(search_path: Union[str, Path],
                           return_deepest_path=return_deepest_path,
                           **kwargs)
 
-    if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found but return the {} path'.format(res, 'deepest' if return_deepest_path else 'shortest'))
     if not return_deepest_path:
-        return reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
     else:
-        return reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+    return _res
 
 
 def find_cwd_file(and_key=None,
-                  use_regex=False,
                   exclude_key=None,
+                  use_regex=False,
                   return_relative_path=True,
                   return_deepest_path=False,
                   disable_alert=False,
@@ -303,7 +307,7 @@ def find_cwd_file(and_key=None,
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
     'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
     'disable_alert' no alert if multiple targets found
@@ -338,17 +342,18 @@ def find_cwd_file(and_key=None,
                           disable_alert=disable_alert,
                           **kwargs)
 
-    if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found but return the {} path'.format(res, 'deepest' if return_deepest_path else 'shortest'))
     if not return_deepest_path:
-        return reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
     else:
-        return reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+    return _res
 
 
 def find_cwd_files(and_key=None,
-                   use_regex=False,
                    exclude_key=None,
+                   use_regex=False,
                    return_relative_path=True,
                    return_deepest_path=False,
                    disable_alert=False,
@@ -356,7 +361,7 @@ def find_cwd_files(and_key=None,
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
 
     :return the target files' path in current working directory
@@ -393,8 +398,8 @@ def find_cwd_files(and_key=None,
 
 def find_files(search_path: Union[str, Path],
                and_key=None,
-               use_regex=False,
                exclude_key=None,
+               use_regex=False,
                return_relative_path=True,
                return_deepest_path=False,
                disable_alert=False,
@@ -402,7 +407,7 @@ def find_files(search_path: Union[str, Path],
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
     :return the target files' path in current working directory
     '''
@@ -437,8 +442,8 @@ def find_files(search_path: Union[str, Path],
 
 
 def find_cwd_dir(and_key=None,
-                 use_regex=False,
                  exclude_key=None,
+                 use_regex=False,
                  return_relative_path=True,
                  return_deepest_path=False,
                  disable_alert=False,
@@ -446,7 +451,7 @@ def find_cwd_dir(and_key=None,
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key',
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
     'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
     'disable_alert' no alert if multiple targets found
@@ -481,13 +486,15 @@ def find_cwd_dir(and_key=None,
                          return_deepest_path=False,
                          disable_alert=False,
                          **kwargs)
-
-    if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found but return the {} path'.format(res, 'deepest' if return_deepest_path else 'shortest'))
+    
     if not return_deepest_path:
-        return reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
     else:
-        return reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+    return _res
+
 
 
 def find_cwd_dirs(and_key=None,
@@ -500,7 +507,7 @@ def find_cwd_dirs(and_key=None,
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
 
     :return the target dirs' path in current working directory
@@ -549,7 +556,7 @@ def find_dirs(search_path: Union[str, Path],
     '''
     'key': find a set of files/dirs whose absolute path contain the 'key'
     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integet, recursive search limit 
+    'recursive' integer, recursive search limit 
     'return_relative_path' return the relative path instead of absolute path
 
     :return the target dirs' path in current working directory
@@ -601,9 +608,9 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
         fs = _find_files(search_path=path,
                          key=key,
                          exclude_key=exclude_key,
-                         use_regex=False,
-                         recursive=5,
-                         return_relative_path=True,
+                         use_regex=kwargs.pop('use_regex', False),
+                         recursive=kwargs.pop('recursive', 5),
+                         return_relative_path=kwargs.pop('return_relative_path', True),
                          **kwargs)
 
         print('FindFile Warning: Remove file', fs)
@@ -617,9 +624,10 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
             fs += _find_files(search_path=path,
                               key=or_key,
                               exclude_key=exclude_key,
-                              use_regex=False,
-                              recursive=5,
-                              return_relative_path=True,
+                              use_regex=kwargs.pop('use_regex', False),
+
+                              recursive=kwargs.pop('recursive', 5),
+                              return_relative_path=kwargs.pop('return_relative_path', True),
                               **kwargs)
 
         print('FindFile Warning: Remove file', fs)
@@ -642,9 +650,10 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
         ds = _find_dirs(search_path=path,
                         key=key,
                         exclude_key=exclude_key,
-                        use_regex=False,
-                        recursive=5,
-                        return_relative_path=True,
+                        use_regex=kwargs.pop('use_regex', False),
+
+                        recursive=kwargs.pop('recursive', 5),
+                        return_relative_path=kwargs.pop('return_relative_path', True),
                         **kwargs)
 
         print('FindFile Warning: Remove dir', ds)
@@ -658,9 +667,9 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
             ds += _find_dirs(search_path=path,
                              key=or_key,
                              exclude_key=exclude_key,
-                             use_regex=False,
-                             recursive=5,
-                             return_relative_path=True,
+                             use_regex=kwargs.pop('use_regex', False),
+                             recursive=kwargs.pop('recursive', 5),
+                             return_relative_path=kwargs.pop('return_relative_path', True),
                              **kwargs)
 
         print('FindFile Warning: Remove dir', ds)
@@ -683,9 +692,9 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
         fs = _find_files(search_path=path,
                          key=key,
                          exclude_key=exclude_key,
-                         use_regex=False,
-                         recursive=5,
-                         return_relative_path=True,
+                         use_regex=kwargs.pop('use_regex', False),
+                         recursive=kwargs.pop('recursive', 5),
+                         return_relative_path=kwargs.pop('return_relative_path', True),
                          **kwargs)
 
         if len(fs) > 1:
@@ -703,8 +712,8 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
                               key=or_key,
                               exclude_key=exclude_key,
                               use_regex=False,
-                              recursive=5,
-                              return_relative_path=True,
+                              recursive=kwargs.pop('recursive', 5),
+                              return_relative_path=kwargs.pop('return_relative_path', True),
                               **kwargs)
         if len(fs) > 1:
             raise ValueError('Multi-files detected while removing single file.')
@@ -729,9 +738,9 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
         ds = _find_dirs(search_path=path,
                         key=key,
                         exclude_key=exclude_key,
-                        use_regex=False,
-                        recursive=5,
-                        return_relative_path=True,
+                        use_regex=kwargs.pop('use_regex', False),
+                        recursive=kwargs.pop('recursive', 5),
+                        return_relative_path=kwargs.pop('return_relative_path', True),
                         **kwargs)
 
         if len(ds) > 1:
@@ -748,9 +757,9 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
             ds += _find_dirs(search_path=path,
                              key=or_key,
                              exclude_key=exclude_key,
-                             use_regex=False,
-                             recursive=5,
-                             return_relative_path=True,
+                             use_regex=kwargs.pop('use_regex', False),
+                             recursive=kwargs.pop('recursive', 5),
+                             return_relative_path=kwargs.pop('return_relative_path', True),
                              **kwargs)
 
         if len(ds) > 1:
