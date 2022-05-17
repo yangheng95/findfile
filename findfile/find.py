@@ -7,6 +7,7 @@
 import os
 import re
 import shutil
+import warnings
 from functools import reduce
 from pathlib import Path
 from typing import Union
@@ -14,6 +15,7 @@ from typing import Union
 from termcolor import colored
 
 
+warnings.filterwarnings('once')
 def accessible(search_path):
     try:
         os.listdir(search_path)
@@ -50,6 +52,8 @@ def _find_files(search_path: Union[str, Path],
     :return the files whose path contains the key(s)
     '''
     recursive = kwargs.pop('recursive', 5)
+    if recursive is True:
+        recursive = 5
 
     if not search_path:
         search_path = os.getcwd()
@@ -77,7 +81,7 @@ def _find_files(search_path: Union[str, Path],
                         has_key = False
                         break
             except re.error:
-                print('Regex pattern error, using string-based search')
+                warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
                 if not k.lower() in search_path.lower():
                     has_key = False
                     break
@@ -96,7 +100,7 @@ def _find_files(search_path: Union[str, Path],
                                 has_exclude_key = True
                                 break
                     except re.error:
-                        print('Regex pattern error, using string-based search')
+                        warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
                         if ex_key.lower() in search_path.lower():
                             has_exclude_key = True
                             break
@@ -172,6 +176,8 @@ def _find_dirs(search_path: Union[str, Path],
     :return the dirs whose path contains the key(s)
     '''
     recursive = kwargs.pop('recursive', 5)
+    if recursive is True:
+        recursive = 5
 
     if not search_path:
         search_path = os.getcwd()
@@ -199,7 +205,7 @@ def _find_dirs(search_path: Union[str, Path],
                         has_key = False
                         break
             except re.error:
-                print('Regex pattern error, using string-based search')
+                warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
                 if not k.lower() in search_path.lower():
                     has_key = False
                     break
@@ -218,7 +224,7 @@ def _find_dirs(search_path: Union[str, Path],
                                 has_exclude_key = True
                                 break
                     except re.error:
-                        print('Regex pattern error, using string-based search')
+                        warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
                         if ex_key.lower() in search_path.lower():
                             has_exclude_key = True
                             break
