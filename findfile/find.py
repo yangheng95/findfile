@@ -639,7 +639,8 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
         print('FindFile Warning: Remove file', fs)
 
         for f in fs:
-            os.remove(f)
+            if os.path.exists(f):
+                shutil.rmtree(f)
 
 
 def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
@@ -657,7 +658,6 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
                         key=key,
                         exclude_key=exclude_key,
                         use_regex=kwargs.pop('use_regex', False),
-
                         recursive=kwargs.pop('recursive', 5),
                         return_relative_path=kwargs.pop('return_relative_path', True),
                         **kwargs)
@@ -681,7 +681,8 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
         print('FindFile Warning: Remove dir', ds)
 
         for d in ds:
-            shutil.rmtree(d)
+            if os.path.exists(d):
+                shutil.rmtree(d)
 
 
 def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
