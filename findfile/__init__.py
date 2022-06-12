@@ -19,4 +19,4 @@ from findfile.find import (find_files,
                            rm_file)
 
 __name__ = 'findfile'
-__version__ = '1.7.9.2'
+__version__ = '1.7.9.3'

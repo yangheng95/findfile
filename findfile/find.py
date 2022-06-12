@@ -143,13 +143,40 @@ def find_file(search_path: Union[str, Path],
 
     :return the file whose path contains the key(s)
     '''
+    '''
+     'key': find a set of files/dirs whose absolute path contain the 'key'
+     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+     'recursive' integer, recursive search limit 
+     'return_relative_path' return the relative path instead of absolute path
+     :return the target files' path in current working directory
+     '''
     key = kwargs.pop('key', and_key)
-    res = _find_files(search_path=search_path,
-                      key=key,
-                      exclude_key=exclude_key,
-                      use_regex=use_regex,
-                      return_relative_path=return_relative_path,
-                      **kwargs)
+
+    res = []
+    or_key = kwargs.pop('or_key', '')
+    if or_key and isinstance(or_key, str):
+        or_key = [or_key]
+    if or_key:
+        if or_key and key:
+            raise ValueError('The key and or_key arg are contradictory!')
+        for key in or_key:
+            res += _find_files(search_path=search_path,
+                               key=key,
+                               use_regex=use_regex,
+                               exclude_key=exclude_key,
+                               return_relative_path=return_relative_path,
+                               return_deepest_path=return_deepest_path,
+                               disable_alert=disable_alert,
+                               **kwargs)
+    else:
+        res = _find_files(search_path=search_path,
+                          key=key,
+                          use_regex=use_regex,
+                          exclude_key=exclude_key,
+                          return_relative_path=return_relative_path,
+                          return_deepest_path=return_deepest_path,
+                          disable_alert=disable_alert,
+                          **kwargs)
 
     if not return_deepest_path:
         _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
