@@ -423,8 +423,8 @@ def find_cwd_files(and_key=None,
                           exclude_key=exclude_key,
                           use_regex=use_regex,
                           return_relative_path=return_relative_path,
-                          return_deepest_path=False,
-                          disable_alert=False,
+                          return_deepest_path=return_deepest_path,
+                          disable_alert=disable_alert,
                           **kwargs)
     return res
 
@@ -468,8 +468,8 @@ def find_files(search_path: Union[str, Path],
                           exclude_key=exclude_key,
                           use_regex=use_regex,
                           return_relative_path=return_relative_path,
-                          return_deepest_path=False,
-                          disable_alert=False,
+                          return_deepest_path=return_deepest_path,
+                          disable_alert=disable_alert,
                           **kwargs)
     return res
 
@@ -506,8 +506,8 @@ def find_cwd_dir(and_key=None,
                               exclude_key=exclude_key,
                               use_regex=use_regex,
                               return_relative_path=return_relative_path,
-                              return_deepest_path=False,
-                              disable_alert=False,
+                              return_deepest_path=return_deepest_path,
+                              disable_alert=disable_alert,
                               **kwargs)
 
     else:
@@ -516,8 +516,8 @@ def find_cwd_dir(and_key=None,
                          exclude_key=exclude_key,
                          use_regex=use_regex,
                          return_relative_path=return_relative_path,
-                         return_deepest_path=False,
-                         disable_alert=False,
+                         return_deepest_path=return_deepest_path,
+                         disable_alert=disable_alert,
                          **kwargs)
     
     if not return_deepest_path:
