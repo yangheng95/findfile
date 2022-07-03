@@ -16,7 +16,10 @@ from findfile.find import (find_files,
                            rm_dirs,
                            rm_files,
                            rm_dir,
-                           rm_file)
+                           rm_file,
+                           rm_cwd_files,
+                           rm_cwd_dirs,
+                           )
 
 __name__ = 'findfile'
-__version__ = '1.7.9.4'
+__version__ = '1.7.9.5'

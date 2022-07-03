@@ -14,8 +14,9 @@ from typing import Union
 
 from termcolor import colored
 
-
 warnings.filterwarnings('once')
+
+
 def accessible(search_path):
     try:
         os.listdir(search_path)
@@ -519,7 +520,7 @@ def find_cwd_dir(and_key=None,
                          return_deepest_path=return_deepest_path,
                          disable_alert=disable_alert,
                          **kwargs)
-    
+
     if not return_deepest_path:
         _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
     else:
@@ -527,7 +528,6 @@ def find_cwd_dir(and_key=None,
     if len(res) > 1 and not disable_alert:
         print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
     return _res
-
 
 
 def find_cwd_dirs(and_key=None,
@@ -643,13 +643,14 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
                          exclude_key=exclude_key,
                          use_regex=kwargs.pop('use_regex', False),
                          recursive=kwargs.pop('recursive', 5),
-                         return_relative_path=kwargs.pop('return_relative_path', True),
+                         return_relative_path=kwargs.pop('return_relative_path', False),
                          **kwargs)
 
-        print('FindFile Warning: Remove file', fs)
+        print(colored('FindFile Warning: Remove files {}'.format(fs), 'red'))
 
         for f in fs:
-            os.remove(f)
+            if os.path.exists(f):
+                os.remove(f)
 
     if or_key:
         fs = []
@@ -660,14 +661,14 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
                               use_regex=kwargs.pop('use_regex', False),
 
                               recursive=kwargs.pop('recursive', 5),
-                              return_relative_path=kwargs.pop('return_relative_path', True),
+                              return_relative_path=kwargs.pop('return_relative_path', False),
                               **kwargs)
 
-        print('FindFile Warning: Remove file', fs)
+        print(colored('FindFile Warning: Remove files {}'.format(fs), 'red'))
 
         for f in fs:
             if os.path.exists(f):
-                shutil.rmtree(f)
+                os.remove(f)
 
 
 def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
@@ -686,13 +687,14 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
                         exclude_key=exclude_key,
                         use_regex=kwargs.pop('use_regex', False),
                         recursive=kwargs.pop('recursive', 5),
-                        return_relative_path=kwargs.pop('return_relative_path', True),
+                        return_relative_path=kwargs.pop('return_relative_path', False),
                         **kwargs)
 
-        print('FindFile Warning: Remove dir', ds)
+        print(colored('FindFile Warning: Remove dirs {}'.format(ds), 'red'))
 
         for d in ds:
-            shutil.rmtree(d)
+            if os.path.exists(d):
+                shutil.rmtree(d)
 
     if or_key:
         ds = []
@@ -702,14 +704,15 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
                              exclude_key=exclude_key,
                              use_regex=kwargs.pop('use_regex', False),
                              recursive=kwargs.pop('recursive', 5),
-                             return_relative_path=kwargs.pop('return_relative_path', True),
+                             return_relative_path=kwargs.pop('return_relative_path', False),
                              **kwargs)
 
-        print('FindFile Warning: Remove dir', ds)
+        print(colored('FindFile Warning: Remove dirs {}'.format(ds), 'red'))
 
         for d in ds:
             if os.path.exists(d):
-                shutil.rmtree(d)
+                if os.path.exists(d):
+                    shutil.rmtree(d)
 
 
 def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
@@ -728,16 +731,17 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
                          exclude_key=exclude_key,
                          use_regex=kwargs.pop('use_regex', False),
                          recursive=kwargs.pop('recursive', 5),
-                         return_relative_path=kwargs.pop('return_relative_path', True),
+                         return_relative_path=kwargs.pop('return_relative_path', False),
                          **kwargs)
 
         if len(fs) > 1:
             raise ValueError('Multi-files detected while removing single file.')
 
-        print('FindFile Warning: Remove file', fs)
+        print(colored('FindFile Warning: Remove file {}'.format(fs), 'red'))
 
         for f in fs:
-            os.remove(f)
+            if os.path.exists(f):
+                os.remove(f)
 
     if or_key:
         fs = []
@@ -747,15 +751,16 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
                               exclude_key=exclude_key,
                               use_regex=False,
                               recursive=kwargs.pop('recursive', 5),
-                              return_relative_path=kwargs.pop('return_relative_path', True),
+                              return_relative_path=kwargs.pop('return_relative_path', False),
                               **kwargs)
         if len(fs) > 1:
             raise ValueError('Multi-files detected while removing single file.')
 
-        print('FindFile Warning: Remove file', fs)
+        print(colored('FindFile Warning: Remove file {}'.format(fs), 'red'))
 
         for f in fs:
-            os.remove(f)
+            if os.path.exists(f):
+                os.remove(f)
 
 
 def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
@@ -774,16 +779,17 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
                         exclude_key=exclude_key,
                         use_regex=kwargs.pop('use_regex', False),
                         recursive=kwargs.pop('recursive', 5),
-                        return_relative_path=kwargs.pop('return_relative_path', True),
+                        return_relative_path=kwargs.pop('return_relative_path', False),
                         **kwargs)
 
         if len(ds) > 1:
             raise ValueError('Multi-dirs detected while removing single file.')
 
-        print('FindFile Warning: Remove dir', ds)
+        print(colored('FindFile Warning: Remove dirs {}'.format(ds), 'red'))
 
         for d in ds:
-            shutil.rmtree(d)
+            if os.path.exists(d):
+                shutil.rmtree(d)
 
     if or_key:
         ds = []
@@ -793,13 +799,30 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
                              exclude_key=exclude_key,
                              use_regex=kwargs.pop('use_regex', False),
                              recursive=kwargs.pop('recursive', 5),
-                             return_relative_path=kwargs.pop('return_relative_path', True),
+                             return_relative_path=kwargs.pop('return_relative_path', False),
                              **kwargs)
 
         if len(ds) > 1:
             raise ValueError('Multi-dirs detected while removing single file.')
 
-        print('FindFile Warning: Remove dir', ds)
+        print(colored('FindFile Warning: Remove dirs {}'.format(ds), 'red'))
 
         for d in ds:
-            shutil.rmtree(d)
+            if os.path.exists(d):
+                shutil.rmtree(d)
+
+
+def rm_cwd_file(and_key=None, exclude_key=None, **kwargs):
+    rm_file(os.getcwd(), and_key, exclude_key, **kwargs)
+
+
+def rm_cwd_files(and_key=None, exclude_key=None, **kwargs):
+    rm_files(os.getcwd(), and_key, exclude_key, **kwargs)
+
+
+def rm_cwd_dir(and_key=None, exclude_key=None, **kwargs):
+    rm_dir(os.getcwd(), and_key, exclude_key, **kwargs)
+
+
+def rm_cwd_dirs(and_key=None, exclude_key=None, **kwargs):
+    rm_dirs(os.getcwd(), and_key, exclude_key, **kwargs)
