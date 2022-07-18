@@ -82,7 +82,7 @@ def _find_files(search_path: Union[str, Path],
                         has_key = False
                         break
             except re.error:
-                warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
+                warnings.warn('FindFile Warning --> Regex pattern error, using string-based search')
                 if not k.lower() in search_path.lower():
                     has_key = False
                     break
@@ -101,7 +101,7 @@ def _find_files(search_path: Union[str, Path],
                                 has_exclude_key = True
                                 break
                     except re.error:
-                        warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
+                        warnings.warn('FindFile Warning ->> Regex pattern error, using string-based search')
                         if ex_key.lower() in search_path.lower():
                             has_exclude_key = True
                             break
@@ -184,7 +184,7 @@ def find_file(search_path: Union[str, Path],
     else:
         _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
     if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
     return _res
 
 
@@ -233,7 +233,7 @@ def _find_dirs(search_path: Union[str, Path],
                         has_key = False
                         break
             except re.error:
-                warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
+                warnings.warn('FindFile Warning --> Regex pattern error, using string-based search')
                 if not k.lower() in search_path.lower():
                     has_key = False
                     break
@@ -252,7 +252,7 @@ def _find_dirs(search_path: Union[str, Path],
                                 has_exclude_key = True
                                 break
                     except re.error:
-                        warnings.warn('FindFile Warning: Regex pattern error, using string-based search')
+                        warnings.warn('FindFile Warning --> Regex pattern error, using string-based search')
                         if ex_key.lower() in search_path.lower():
                             has_exclude_key = True
                             break
@@ -327,7 +327,7 @@ def find_dir(search_path: Union[str, Path],
     else:
         _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
     if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
     return _res
 
 
@@ -381,7 +381,7 @@ def find_cwd_file(and_key=None,
     else:
         _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
     if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
     return _res
 
 
@@ -526,7 +526,7 @@ def find_cwd_dir(and_key=None,
     else:
         _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
     if len(res) > 1 and not disable_alert:
-        print('FindFile Warning: multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
     return _res
 
 
@@ -741,7 +741,10 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
 
         for f in fs:
             if os.path.exists(f):
-                os.remove(f)
+                try:
+                    os.remove(f)
+                except Exception as e:
+                    print(colored('FindFile Warning --> Remove file {} failed: {}'.format(f, e), 'red'))
 
     if or_key:
         fs = []
@@ -756,11 +759,15 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
         if len(fs) > 1:
             raise ValueError('Multi-files detected while removing single file.')
 
-        print(colored('FindFile Warning: Remove file {}'.format(fs), 'red'))
+        print(colored('FindFile Warning --> Remove file {}'.format(fs), 'red'))
 
         for f in fs:
             if os.path.exists(f):
-                os.remove(f)
+                try:
+                    os.remove(f)
+                except Exception as e:
+                    print(colored('FindFile Warning: Remove file {} failed: {}'.format(f, e), 'red'))
+
 
 
 def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
@@ -789,7 +796,10 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
 
         for d in ds:
             if os.path.exists(d):
-                shutil.rmtree(d)
+                try:
+                    shutil.rmtree(d)
+                except Exception as e:
+                    print(colored('FindFile Warning --> Remove dirs {} failed: {}'.format(d, e), 'red'))
 
     if or_key:
         ds = []
@@ -809,7 +819,11 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
 
         for d in ds:
             if os.path.exists(d):
-                shutil.rmtree(d)
+                try:
+                    shutil.rmtree(d)
+                except Exception as e:
+                    print(colored('FindFile Warning --> Remove dirs {} failed: {}'.format(d, e), 'red'))
+
 
 
 def rm_cwd_file(and_key=None, exclude_key=None, **kwargs):
