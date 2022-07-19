@@ -650,7 +650,10 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
 
         for f in fs:
             if os.path.exists(f):
-                os.remove(f)
+                try:
+                    os.remove(f)
+                except Exception as e:
+                    print(colored('FindFile Warning: Remove file {} failed: {}'.format(f, e), 'red'))
 
     if or_key:
         fs = []
@@ -668,7 +671,10 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
 
         for f in fs:
             if os.path.exists(f):
-                os.remove(f)
+                try:
+                    os.remove(f)
+                except Exception as e:
+                    print(colored('FindFile Warning --> Remove file {} failed: {}'.format(f, e), 'red'))
 
 
 def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
@@ -694,7 +700,10 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
 
         for d in ds:
             if os.path.exists(d):
-                shutil.rmtree(d)
+                try:
+                    shutil.rmtree(d)
+                except Exception as e:
+                    print(colored('FindFile Warning: Remove dir {} failed: {}'.format(d, e), 'red'))
 
     if or_key:
         ds = []
@@ -712,7 +721,10 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
         for d in ds:
             if os.path.exists(d):
                 if os.path.exists(d):
-                    shutil.rmtree(d)
+                    try:
+                        shutil.rmtree(d)
+                    except Exception as e:
+                        print(colored('FindFile Warning --> Remove dir {} failed: {}'.format(d, e), 'red'))
 
 
 def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
@@ -769,7 +781,6 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
                     print(colored('FindFile Warning: Remove file {} failed: {}'.format(f, e), 'red'))
 
 
-
 def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
     key = kwargs.pop('key', and_key)
 
@@ -823,7 +834,6 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
                     shutil.rmtree(d)
                 except Exception as e:
                     print(colored('FindFile Warning --> Remove dirs {} failed: {}'.format(d, e), 'red'))
-
 
 
 def rm_cwd_file(and_key=None, exclude_key=None, **kwargs):
