@@ -22,4 +22,4 @@ from findfile.find import (find_files,
                            )
 
 __name__ = 'findfile'
-__version__ = '1.7.9.7'
+__version__ = '1.7.9.8'
