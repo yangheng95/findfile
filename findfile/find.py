@@ -125,69 +125,6 @@ def _find_files(search_path: Union[str, Path],
     return res
 
 
-def find_file(search_path: Union[str, Path],
-              and_key=None,
-              exclude_key=None,
-              use_regex=False,
-              return_relative_path=True,
-              return_deepest_path=False,
-              disable_alert=False,
-              **kwargs) -> str:
-    '''
-    'search_path': path to search
-    'key': find a set of files/dirs whose absolute path contain the 'key'
-    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integer, recursive search limit 
-    'return_relative_path' return the relative path instead of absolute path
-    'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
-    'disable_alert' no alert if multiple targets found
-
-    :return the file whose path contains the key(s)
-    '''
-    '''
-     'key': find a set of files/dirs whose absolute path contain the 'key'
-     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-     'recursive' integer, recursive search limit 
-     'return_relative_path' return the relative path instead of absolute path
-     :return the target files' path in current working directory
-     '''
-    key = kwargs.pop('key', and_key)
-
-    res = []
-    or_key = kwargs.pop('or_key', '')
-    if or_key and isinstance(or_key, str):
-        or_key = [or_key]
-    if or_key:
-        if or_key and key:
-            raise ValueError('The key and or_key arg are contradictory!')
-        for key in or_key:
-            res += _find_files(search_path=search_path,
-                               key=key,
-                               use_regex=use_regex,
-                               exclude_key=exclude_key,
-                               return_relative_path=return_relative_path,
-                               return_deepest_path=return_deepest_path,
-                               disable_alert=disable_alert,
-                               **kwargs)
-    else:
-        res = _find_files(search_path=search_path,
-                          key=key,
-                          use_regex=use_regex,
-                          exclude_key=exclude_key,
-                          return_relative_path=return_relative_path,
-                          return_deepest_path=return_deepest_path,
-                          disable_alert=disable_alert,
-                          **kwargs)
-
-    if not return_deepest_path:
-        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
-    else:
-        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
-    if len(res) > 1 and not disable_alert:
-        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
-    return _res
-
-
 def _find_dirs(search_path: Union[str, Path],
                key=None,
                exclude_key=None,
@@ -276,6 +213,213 @@ def _find_dirs(search_path: Union[str, Path],
     return res
 
 
+def find_file(search_path: Union[str, Path],
+              and_key=None,
+              exclude_key=None,
+              use_regex=False,
+              return_relative_path=True,
+              return_deepest_path=False,
+              disable_alert=False,
+              **kwargs) -> str:
+    '''
+    'search_path': path to search
+    'key': find a set of files/dirs whose absolute path contain the 'key'
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' integer, recursive search limit
+    'return_relative_path' return the relative path instead of absolute path
+    'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
+    'disable_alert' no alert if multiple targets found
+
+    :return the file whose path contains the key(s)
+    '''
+    '''
+     'key': find a set of files/dirs whose absolute path contain the 'key'
+     'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+     'recursive' integer, recursive search limit 
+     'return_relative_path' return the relative path instead of absolute path
+     :return the target files' path in current working directory
+     '''
+    key = kwargs.pop('key', and_key)
+
+    res = []
+    or_key = kwargs.pop('or_key', '')
+    if or_key and isinstance(or_key, str):
+        or_key = [or_key]
+    if or_key:
+        if or_key and key:
+            raise ValueError('The key and or_key arg are contradictory!')
+        for key in or_key:
+            res += _find_files(search_path=search_path,
+                               key=key,
+                               use_regex=use_regex,
+                               exclude_key=exclude_key,
+                               return_relative_path=return_relative_path,
+                               return_deepest_path=return_deepest_path,
+                               disable_alert=disable_alert,
+                               **kwargs)
+    else:
+        res = _find_files(search_path=search_path,
+                          key=key,
+                          use_regex=use_regex,
+                          exclude_key=exclude_key,
+                          return_relative_path=return_relative_path,
+                          return_deepest_path=return_deepest_path,
+                          disable_alert=disable_alert,
+                          **kwargs)
+
+    if not return_deepest_path:
+        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
+    else:
+        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+    return _res
+
+
+def find_cwd_file(and_key=None,
+                  exclude_key=None,
+                  use_regex=False,
+                  return_relative_path=True,
+                  return_deepest_path=False,
+                  disable_alert=False,
+                  **kwargs):
+    '''
+    'key': find a set of files/dirs whose absolute path contain the 'key'
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' integer, recursive search limit
+    'return_relative_path' return the relative path instead of absolute path
+    'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
+    'disable_alert' no alert if multiple targets found
+
+    :return the target file path in current working directory
+    '''
+    key = kwargs.pop('key', and_key)
+
+    res = []
+    or_key = kwargs.pop('or_key', '')
+    if or_key and isinstance(or_key, str):
+        or_key = [or_key]
+    if or_key:
+        if or_key and key:
+            raise ValueError('The key and or_key arg are contradictory!')
+        for key in or_key:
+            res += _find_files(search_path=os.getcwd(),
+                               key=key,
+                               use_regex=use_regex,
+                               exclude_key=exclude_key,
+                               return_relative_path=return_relative_path,
+                               return_deepest_path=return_deepest_path,
+                               disable_alert=disable_alert,
+                               **kwargs)
+    else:
+        res = _find_files(search_path=os.getcwd(),
+                          key=key,
+                          use_regex=use_regex,
+                          exclude_key=exclude_key,
+                          return_relative_path=return_relative_path,
+                          return_deepest_path=return_deepest_path,
+                          disable_alert=disable_alert,
+                          **kwargs)
+
+    if not return_deepest_path:
+        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
+    else:
+        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
+    if len(res) > 1 and not disable_alert:
+        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
+    return _res
+
+
+def find_cwd_files(and_key=None,
+                   exclude_key=None,
+                   use_regex=False,
+                   return_relative_path=True,
+                   disable_alert=False,
+                   **kwargs):
+    '''
+    'key': find a set of files/dirs whose absolute path contain the 'key'
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' integer, recursive search limit
+    'return_relative_path' return the relative path instead of absolute path
+
+    :return the target files' path in current working directory
+    '''
+    key = kwargs.pop('key', and_key)
+
+    if kwargs.get('return_deepest_path', False):
+        raise ValueError('return_deepest_path is not supported in find_cwd_files() which return all the results.')
+
+    res = []
+    or_key = kwargs.pop('or_key', '')
+    if or_key and isinstance(or_key, str):
+        or_key = [or_key]
+    if or_key:
+        if or_key and key:
+            raise ValueError('The key and or_key arg are contradictory!')
+        for key in or_key:
+            res += _find_files(search_path=os.getcwd(),
+                               key=key,
+                               exclude_key=exclude_key,
+                               use_regex=use_regex,
+                               return_relative_path=return_relative_path,
+                               disable_alert=disable_alert,
+                               **kwargs)
+    else:
+        res = _find_files(search_path=os.getcwd(),
+                          key=key,
+                          exclude_key=exclude_key,
+                          use_regex=use_regex,
+                          return_relative_path=return_relative_path,
+                          disable_alert=disable_alert,
+                          **kwargs)
+    return res
+
+
+def find_files(search_path: Union[str, Path],
+               and_key=None,
+               exclude_key=None,
+               use_regex=False,
+               return_relative_path=True,
+               disable_alert=False,
+               **kwargs):
+    '''
+    'key': find a set of files/dirs whose absolute path contain the 'key'
+    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+    'recursive' integer, recursive search limit
+    'return_relative_path' return the relative path instead of absolute path
+    :return the target files' path in current working directory
+    '''
+    key = kwargs.pop('key', and_key)
+
+    if kwargs.get('return_deepest_path', False):
+        raise ValueError('return_deepest_path is not supported in find_files() which return all the results.')
+
+    res = []
+    or_key = kwargs.pop('or_key', '')
+    if or_key and isinstance(or_key, str):
+        or_key = [or_key]
+    if or_key:
+        if or_key and key:
+            raise ValueError('The key and or_key arg are contradictory!')
+        for key in or_key:
+            res += _find_files(search_path,
+                               key=key,
+                               exclude_key=exclude_key,
+                               use_regex=use_regex,
+                               return_relative_path=return_relative_path,
+                               disable_alert=disable_alert,
+                               **kwargs)
+    else:
+        res = _find_files(search_path,
+                          key=key,
+                          exclude_key=exclude_key,
+                          use_regex=use_regex,
+                          return_relative_path=return_relative_path,
+                          disable_alert=disable_alert,
+                          **kwargs)
+    return res
+
+
 def find_dir(search_path: Union[str, Path],
              and_key=None,
              exclude_key=None,
@@ -329,150 +473,6 @@ def find_dir(search_path: Union[str, Path],
     if len(res) > 1 and not disable_alert:
         print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
     return _res
-
-
-def find_cwd_file(and_key=None,
-                  exclude_key=None,
-                  use_regex=False,
-                  return_relative_path=True,
-                  return_deepest_path=False,
-                  disable_alert=False,
-                  **kwargs):
-    '''
-    'key': find a set of files/dirs whose absolute path contain the 'key'
-    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integer, recursive search limit 
-    'return_relative_path' return the relative path instead of absolute path
-    'return_deepest_path' True/False to return the deepest/shortest path if multiple targets found
-    'disable_alert' no alert if multiple targets found
-
-    :return the target file path in current working directory
-    '''
-    key = kwargs.pop('key', and_key)
-
-    res = []
-    or_key = kwargs.pop('or_key', '')
-    if or_key and isinstance(or_key, str):
-        or_key = [or_key]
-    if or_key:
-        if or_key and key:
-            raise ValueError('The key and or_key arg are contradictory!')
-        for key in or_key:
-            res += _find_files(search_path=os.getcwd(),
-                               key=key,
-                               use_regex=use_regex,
-                               exclude_key=exclude_key,
-                               return_relative_path=return_relative_path,
-                               return_deepest_path=return_deepest_path,
-                               disable_alert=disable_alert,
-                               **kwargs)
-    else:
-        res = _find_files(search_path=os.getcwd(),
-                          key=key,
-                          use_regex=use_regex,
-                          exclude_key=exclude_key,
-                          return_relative_path=return_relative_path,
-                          return_deepest_path=return_deepest_path,
-                          disable_alert=disable_alert,
-                          **kwargs)
-
-    if not return_deepest_path:
-        _res = reduce(lambda x, y: x if len(x) < len(y) else y, res) if res else None
-    else:
-        _res = reduce(lambda x, y: x if len(x) > len(y) else y, res) if res else None
-    if len(res) > 1 and not disable_alert:
-        print('FindFile Warning --> multiple targets {} found, only return the {} path: <{}>'.format(res, 'deepest' if return_deepest_path else 'shortest', colored(_res, 'yellow')))
-    return _res
-
-
-def find_cwd_files(and_key=None,
-                   exclude_key=None,
-                   use_regex=False,
-                   return_relative_path=True,
-                   return_deepest_path=False,
-                   disable_alert=False,
-                   **kwargs):
-    '''
-    'key': find a set of files/dirs whose absolute path contain the 'key'
-    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integer, recursive search limit 
-    'return_relative_path' return the relative path instead of absolute path
-
-    :return the target files' path in current working directory
-    '''
-    key = kwargs.pop('key', and_key)
-
-    res = []
-    or_key = kwargs.pop('or_key', '')
-    if or_key and isinstance(or_key, str):
-        or_key = [or_key]
-    if or_key:
-        if or_key and key:
-            raise ValueError('The key and or_key arg are contradictory!')
-        for key in or_key:
-            res += _find_files(search_path=os.getcwd(),
-                               key=key,
-                               exclude_key=exclude_key,
-                               use_regex=use_regex,
-                               return_relative_path=return_relative_path,
-                               return_deepest_path=return_deepest_path,
-                               disable_alert=disable_alert,
-                               **kwargs)
-    else:
-        res = _find_files(search_path=os.getcwd(),
-                          key=key,
-                          exclude_key=exclude_key,
-                          use_regex=use_regex,
-                          return_relative_path=return_relative_path,
-                          return_deepest_path=return_deepest_path,
-                          disable_alert=disable_alert,
-                          **kwargs)
-    return res
-
-
-def find_files(search_path: Union[str, Path],
-               and_key=None,
-               exclude_key=None,
-               use_regex=False,
-               return_relative_path=True,
-               return_deepest_path=False,
-               disable_alert=False,
-               **kwargs):
-    '''
-    'key': find a set of files/dirs whose absolute path contain the 'key'
-    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integer, recursive search limit 
-    'return_relative_path' return the relative path instead of absolute path
-    :return the target files' path in current working directory
-    '''
-    key = kwargs.pop('key', and_key)
-
-    res = []
-    or_key = kwargs.pop('or_key', '')
-    if or_key and isinstance(or_key, str):
-        or_key = [or_key]
-    if or_key:
-        if or_key and key:
-            raise ValueError('The key and or_key arg are contradictory!')
-        for key in or_key:
-            res += _find_files(search_path,
-                               key=key,
-                               exclude_key=exclude_key,
-                               use_regex=use_regex,
-                               return_relative_path=return_relative_path,
-                               return_deepest_path=return_deepest_path,
-                               disable_alert=disable_alert,
-                               **kwargs)
-    else:
-        res = _find_files(search_path,
-                          key=key,
-                          exclude_key=exclude_key,
-                          use_regex=use_regex,
-                          return_relative_path=return_relative_path,
-                          return_deepest_path=return_deepest_path,
-                          disable_alert=disable_alert,
-                          **kwargs)
-    return res
 
 
 def find_cwd_dir(and_key=None,
@@ -534,7 +534,6 @@ def find_cwd_dirs(and_key=None,
                   exclude_key=None,
                   use_regex=False,
                   return_relative_path=True,
-                  return_deepest_path=False,
                   disable_alert=False,
                   **kwargs):
     '''
@@ -547,6 +546,9 @@ def find_cwd_dirs(and_key=None,
     '''
 
     key = kwargs.pop('key', and_key)
+
+    if kwargs.get('return_deepest_path', False):
+        raise ValueError('return_deepest_path is not supported in find_cwd_dirs() which return all the results.')
 
     res = []
     or_key = kwargs.pop('or_key', '')
@@ -561,7 +563,6 @@ def find_cwd_dirs(and_key=None,
                               exclude_key=exclude_key,
                               use_regex=use_regex,
                               return_relative_path=return_relative_path,
-                              return_deepest_path=return_deepest_path,
                               disable_alert=disable_alert,
                               **kwargs)
 
@@ -571,9 +572,20 @@ def find_cwd_dirs(and_key=None,
                          exclude_key=exclude_key,
                          use_regex=use_regex,
                          return_relative_path=return_relative_path,
-                         return_deepest_path=return_deepest_path,
                          disable_alert=disable_alert,
                          **kwargs)
+
+    if kwargs.get('return_leaf_only', True):
+        _res = []
+        for i, x in enumerate(res):
+            flag = True
+            for j, y in enumerate(res[:i] + res[i+1:]):
+                if y==x or y.startswith(x):
+                    flag = False
+                    break
+            if flag:
+                _res.append(x)
+        res = _res
 
     return res
 
@@ -597,6 +609,9 @@ def find_dirs(search_path: Union[str, Path],
 
     key = kwargs.pop('key', and_key)
 
+    if kwargs.get('return_deepest_path', False):
+        raise ValueError('return_deepest_path is not supported in find_dirs() which return all the results.')
+
     res = []
     or_key = kwargs.pop('or_key', '')
     if or_key and isinstance(or_key, str):
@@ -610,7 +625,6 @@ def find_dirs(search_path: Union[str, Path],
                               exclude_key=exclude_key,
                               use_regex=use_regex,
                               return_relative_path=return_relative_path,
-                              return_deepest_path=return_deepest_path,
                               disable_alert=disable_alert,
                               **kwargs)
 
@@ -620,9 +634,21 @@ def find_dirs(search_path: Union[str, Path],
                          exclude_key=exclude_key,
                          use_regex=use_regex,
                          return_relative_path=return_relative_path,
-                         return_deepest_path=return_deepest_path,
                          disable_alert=disable_alert,
                          **kwargs)
+
+
+    if kwargs.get('return_leaf_only', True):
+        _res = []
+        for i, x in enumerate(res):
+            flag = True
+            for j, y in enumerate(res[:i] + res[i+1:]):
+                if y==x or y.startswith(x):
+                    flag = False
+                    break
+            if flag:
+                _res.append(x)
+        res = _res
 
     return res
 
