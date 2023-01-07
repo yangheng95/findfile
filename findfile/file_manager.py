@@ -29,13 +29,18 @@ class DiskCache(List):
             self.work_dir = work_dir
         else:
             self.work_dir = find_dir(
-                work_dir, "", recursive=kwargs.get("recursive", 30)
+                work_dir,
+                "",
             )
 
         self.disk_list_cache = findfile.find_files(
-            self.work_dir, "", **kwargs, recursive=kwargs.get("recursive", 30)
+            self.work_dir,
+            "",
+            **kwargs,
         ) + findfile.find_dirs(
-            self.work_dir, "", **kwargs, recursive=kwargs.get("recursive", 30)
+            self.work_dir,
+            "",
+            **kwargs,
         )
 
         self.kwargs = kwargs
@@ -86,19 +91,32 @@ class DiskCache(List):
 
 
 class FileManager:
-    def __init__(self, work_dir, mode="r", encoding="utf-8"):
+    def __init__(self, work_dir):
         self.disk_cache = DiskCache(work_dir)
         self.work_dir = work_dir
-        self.mode = mode
-        self.encoding = encoding
-        self.file = None
+        self.files = None
 
-    def __enter__(self):
-        self.file = open(self.work_dir, self.mode, encoding=self.encoding)
-        return self.file
+    def readlines(self, mode="r", encoding="utf-8", **kwargs):
+        lines = []
+        for f in self.disk_cache:
+            if os.path.isfile(f):
+                with open(f, mode=mode, encoding=encoding) as fp:
+                    lines += fp.readlines()
+        return lines
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.file.close()
+    def read(self, mode="r", encoding="utf-8", **kwargs):
+        lines = []
+        for f in self.disk_cache:
+            if os.path.isfile(f):
+                with open(f, mode=mode, encoding=encoding) as fp:
+                    lines += fp.read()
+        return lines
+
+    def writelines(self, content, mode="w", encoding="utf-8", **kwargs):
+        for f in self.disk_cache:
+            if os.path.isfile(f):
+                with open(f, mode=mode, encoding=encoding) as fp:
+                    fp.write(content)
 
     def find_file(
             self,
@@ -210,7 +228,7 @@ class FileManager:
                 raise ValueError("The key and or_key arg are contradictory!")
             for key in or_key:
                 res += self._find_files(
-                    search_path=os.getcwd(),
+                    search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                     key=key,
                     use_regex=use_regex,
                     exclude_key=exclude_key,
@@ -221,7 +239,7 @@ class FileManager:
                 )
         else:
             res = self._find_files(
-                search_path=os.getcwd(),
+                search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                 key=key,
                 use_regex=use_regex,
                 exclude_key=exclude_key,
@@ -282,7 +300,7 @@ class FileManager:
                 raise ValueError("The key and or_key arg are contradictory!")
             for key in or_key:
                 res += self._find_files(
-                    search_path=os.getcwd(),
+                    search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                     key=key,
                     exclude_key=exclude_key,
                     use_regex=use_regex,
@@ -292,7 +310,7 @@ class FileManager:
                 )
         else:
             res = self._find_files(
-                search_path=os.getcwd(),
+                search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                 key=key,
                 exclude_key=exclude_key,
                 use_regex=use_regex,
@@ -457,7 +475,7 @@ class FileManager:
                 raise ValueError("The key and or_key arg are contradictory!")
             for key in or_key:
                 res += self._find_dirs(
-                    search_path=os.getcwd(),
+                    search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                     key=key,
                     exclude_key=exclude_key,
                     use_regex=use_regex,
@@ -469,7 +487,7 @@ class FileManager:
 
         else:
             res = self._find_dirs(
-                search_path=os.getcwd(),
+                search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                 key=key,
                 exclude_key=exclude_key,
                 use_regex=use_regex,
@@ -531,7 +549,7 @@ class FileManager:
                 raise ValueError("The key and or_key arg are contradictory!")
             for key in or_key:
                 res += self._find_dirs(
-                    search_path=os.getcwd(),
+                    search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                     key=key,
                     exclude_key=exclude_key,
                     use_regex=use_regex,
@@ -542,7 +560,7 @@ class FileManager:
 
         else:
             res = self._find_dirs(
-                search_path=os.getcwd(),
+                search_path=os.getcwd() if not self.disk_cache else self.disk_cache,
                 key=key,
                 exclude_key=exclude_key,
                 use_regex=use_regex,
@@ -935,14 +953,14 @@ class FileManager:
             **kwargs,
     ) -> list:
         """
-           'search_path': path to search
-           'key': find a set of files/dirs whose absolute path contain the 'key'
-           'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-           'recursive' integer, recursive search limit
-           'return_relative_path' return the relative path instead of absolute path
+        'search_path': path to search
+        'key': find a set of files/dirs whose absolute path contain the 'key'
+        'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+        'recursive' integer, recursive search limit
+        'return_relative_path' return the relative path instead of absolute path
 
-           :return the files whose path contains the key(s)
-           """
+        :return the files whose path contains the key(s)
+        """
         recursive = kwargs.pop("recursive", 30)
         if recursive is True:
             recursive = 5
@@ -974,7 +992,9 @@ class FileManager:
                                 break
                     except re.error as e:
                         warnings.warn(
-                            "FindFile Warning --> Regex pattern error: {}, using string-based search".format(e)
+                            "FindFile Warning --> Regex pattern error: {}, using string-based search".format(
+                                e
+                            )
                         )
                         if not k.lower() in sp.lower():
                             has_key = False
@@ -1024,11 +1044,10 @@ class FileManager:
                             use_regex=use_regex,
                             recursive=recursive - 1,
                             return_relative_path=return_relative_path,
-                            **kwargs
+                            **kwargs,
                         )
 
         return list(set(res))
-
 
     def _find_dirs(
             self,
@@ -1040,14 +1059,14 @@ class FileManager:
             **kwargs,
     ) -> list:
         """
-          'search_path': path to search
-          'key': find a set of files/dirs whose absolute path contain the 'key'
-          'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-          'recursive' integer, recursive search limit
-          'return_relative_path' return the relative path instead of absolute path
+        'search_path': path to search
+        'key': find a set of files/dirs whose absolute path contain the 'key'
+        'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
+        'recursive' integer, recursive search limit
+        'return_relative_path' return the relative path instead of absolute path
 
-          :return the dirs whose path contains the key(s)
-          """
+        :return the dirs whose path contains the key(s)
+        """
         recursive = kwargs.pop("recursive", 30)
         if recursive is True:
             recursive = 5
@@ -1079,7 +1098,9 @@ class FileManager:
                                 break
                     except re.error as e:
                         warnings.warn(
-                            "FindFile Warning --> Regex pattern error: {}, using string-based search".format(e)
+                            "FindFile Warning --> Regex pattern error: {}, using string-based search".format(
+                                e
+                            )
                         )
                         if not k.lower() in sp.lower():
                             has_key = False
@@ -1129,22 +1150,8 @@ class FileManager:
                             use_regex=use_regex,
                             recursive=recursive - 1,
                             return_relative_path=return_relative_path,
-                            **kwargs
+                            **kwargs,
                         )
 
         return list(set(res))
 
-
-if __name__ == "__main__":
-    # disk_cache = DiskCache(
-    #     r"C:\Users\chuan\OneDrive - University of Exeter\AIProjects\PyABSA\CPDP\PROMISE-backup"
-    # )
-    print(time.localtime())
-    fm = FileManager(r"C:\Users\chuan\OneDrive - University of Exeter\AIProjects\PyABSA\CPDP\PROMISE-backup")
-    print(time.localtime())
-    files = fm.find_files(key=".java", use_regex=False)
-    print(time.localtime())
-    files = fm.find_files(key=".py")
-    print(time.localtime())
-
-    print(files)

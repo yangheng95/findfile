@@ -782,7 +782,7 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
             key=key,
             exclude_key=exclude_key,
             use_regex=kwargs.pop("use_regex", False),
-            recursive=kwargs.pop("recursive", 5),
+            recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
             **kwargs
         )
@@ -809,7 +809,7 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
                 key=or_key,
                 exclude_key=exclude_key,
                 use_regex=kwargs.pop("use_regex", False),
-                recursive=kwargs.pop("recursive", 5),
+                recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
                 **kwargs
             )
@@ -847,7 +847,7 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
             key=key,
             exclude_key=exclude_key,
             use_regex=kwargs.pop("use_regex", False),
-            recursive=kwargs.pop("recursive", 5),
+            recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
             **kwargs
         )
@@ -874,7 +874,7 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
                 key=or_key,
                 exclude_key=exclude_key,
                 use_regex=kwargs.pop("use_regex", False),
-                recursive=kwargs.pop("recursive", 5),
+                recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
                 **kwargs
             )
@@ -913,7 +913,7 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
             key=key,
             exclude_key=exclude_key,
             use_regex=kwargs.pop("use_regex", False),
-            recursive=kwargs.pop("recursive", 5),
+            recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
             **kwargs
         )
@@ -945,7 +945,7 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
                 key=or_key,
                 exclude_key=exclude_key,
                 use_regex=False,
-                recursive=kwargs.pop("recursive", 5),
+                recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
                 **kwargs
             )
@@ -983,7 +983,7 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
             key=key,
             exclude_key=exclude_key,
             use_regex=kwargs.pop("use_regex", False),
-            recursive=kwargs.pop("recursive", 5),
+            recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
             **kwargs
         )
@@ -1015,7 +1015,7 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
                 key=or_key,
                 exclude_key=exclude_key,
                 use_regex=kwargs.pop("use_regex", False),
-                recursive=kwargs.pop("recursive", 5),
+                recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
                 **kwargs
             )

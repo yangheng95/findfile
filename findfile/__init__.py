@@ -6,7 +6,7 @@
 # Copyright (C) 2021. All Rights Reserved.
 
 __name__ = "findfile"
-__version__ = "2.0.0dev"
+__version__ = "2.0.0dev1"
 
 from findfile.find import (
     find_files,
@@ -24,4 +24,4 @@ from findfile.find import (
     rm_cwd_files,
     rm_cwd_dirs,
 )
-from findfile.file_manager import (DiskCache, FileManager)
+from findfile.file_manager import DiskCache, FileManager
