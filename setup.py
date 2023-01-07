@@ -12,21 +12,19 @@ from setuptools import setup, find_packages
 setup(
     name=__name__,
     version=__version__,
-    description='This package provides the function to search target file(s)/dir(s) using keyword,'
-                ' alleviating the possibility of failure to find files by specifying relative/absolute path',
-
-    url='https://github.com/yangheng95/findfile',
+    description="This package provides the function to search target file(s)/dir(s) using keyword,"
+    " alleviating the possibility of failure to find files by specifying relative/absolute path",
+    url="https://github.com/yangheng95/findfile",
     # Author details
-    author='Yang Heng',
-    author_email='yangheng@m.scnu.edu.cn',
+    author="Yang Heng",
+    author_email="yangheng@m.scnu.edu.cn",
     python_requires=">=3.6",
     packages=find_packages(),
     include_package_data=True,
-    exclude_package_date={'': ['.gitignore']},
+    exclude_package_date={"": [".gitignore"]},
     # Choose your license
-    license='MIT',
+    license="MIT",
     install_requires=[
-        'termcolor',
-    ]
-
+        "termcolor",
+    ],
 )
