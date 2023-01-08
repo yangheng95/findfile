@@ -91,10 +91,10 @@ class DiskCache(List):
 
 
 class FileManager:
-    def __init__(self, work_dir):
-        self.disk_cache = DiskCache(work_dir)
+    def __init__(self, work_dir, **kwargs):
+        self.recursive = kwargs.get("recursive", 30)
+        self.disk_cache = DiskCache(work_dir, recursive=self.recursive, **kwargs)
         self.work_dir = work_dir
-        self.files = None
 
     def readlines(self, mode="r", encoding="utf-8", **kwargs):
         lines = []
@@ -1085,59 +1085,30 @@ class FileManager:
             key = [key]
         for sp in search_path:
             if os.path.isdir(sp):
-                has_key = True
-                for k in key:
-                    try:
-                        if use_regex:
-                            if not re.findall(k, sp):
-                                has_key = False
-                                break
-                        else:
-                            if not k.lower() in sp.lower():
-                                has_key = False
-                                break
-                    except re.error as e:
-                        warnings.warn(
-                            "FindFile Warning --> Regex pattern error: {}, using string-based search".format(
-                                e
-                            )
-                        )
-                        if not k.lower() in sp.lower():
-                            has_key = False
-                            break
+                if not use_regex:
+                    has_key = all(k in sp for k in key)
+                else:
+                    has_key = all(re.findall(k, sp) for k in key)
 
-                if has_key:
-                    if exclude_key:
-                        has_exclude_key = False
-                        for ex_key in exclude_key:
-                            try:
-                                if use_regex:
-                                    if re.findall(ex_key, sp):
-                                        has_exclude_key = True
-                                        break
-                                else:
-                                    if ex_key.lower() in sp.lower():
-                                        has_exclude_key = True
-                                        break
-                            except re.error:
-                                warnings.warn(
-                                    "FindFile Warning --> Regex pattern error, using string-based search"
-                                )
-                                if ex_key.lower() in sp.lower():
-                                    has_exclude_key = True
-                                    break
-                        if not has_exclude_key:
-                            res.append(
-                                sp.replace(os.getcwd() + os.sep, "")
-                                if return_relative_path
-                                else sp
-                            )
+                has_exclude_key = False
+                if exclude_key:
+                    if not use_regex:
+                        has_key = all(k in sp for k in key)
                     else:
-                        res.append(
-                            sp.replace(os.getcwd() + os.sep, "")
-                            if return_relative_path
-                            else sp
-                        )
+                        has_key = all(re.findall(k, sp) for k in key)
+
+                    if has_key and exclude_key:
+                        if not use_regex:
+                            has_exclude_key = any(ex_key in sp for ex_key in exclude_key)
+                        else:
+                            has_exclude_key = any(re.findall(ex_key, sp) for ex_key in exclude_key)
+
+                if has_key and not has_exclude_key:
+                    res.append(
+                        sp.replace(os.getcwd() + os.sep, "")
+                        if return_relative_path
+                        else sp
+                    )
 
             if os.path.isdir(sp) and accessible(sp) and len(search_path) == 1:
                 items = os.listdir(sp)
@@ -1155,3 +1126,18 @@ class FileManager:
 
         return list(set(res))
 
+if __name__ == "__main__":
+    # disk_cache = DiskCache(
+    #     r"C:\Users\chuan\OneDrive - University of Exeter\AIProjects\PyABSA\CPDP\PROMISE-backup"
+    # )
+    print(time.localtime())
+    fm = FileManager(
+        r"C:\Users\chuan\OneDrive - University of Exeter\AIProjects\PyABSA\CPDP\PROMISE-backup"
+    )
+    print(time.localtime())
+    java_files = fm.find_files(key=".java", use_regex=False, recursive=30)
+    print(time.localtime())
+    py_files = fm.find_files(key=".py")
+    print(time.localtime())
+
+    print(java_files)
