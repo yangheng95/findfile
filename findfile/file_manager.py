@@ -7,6 +7,7 @@
 # google scholar: https://scholar.google.com/citations?user=NPq5a_0AAAAJ&hl=en
 # Copyright (C) 2021. All Rights Reserved.
 import os.path
+import pickle
 import re
 import shutil
 import time
@@ -92,24 +93,40 @@ class DiskCache(List):
 
 class FileManager:
     def __init__(self, work_dir, **kwargs):
-        self.recursive = kwargs.get("recursive", 30)
-        self.disk_cache = DiskCache(work_dir, recursive=self.recursive, **kwargs)
-        self.work_dir = work_dir
 
-    def readlines(self, mode="r", encoding="utf-8", **kwargs):
+        self.recursive = kwargs.get("recursive", 30)
+        self.work_dir = work_dir
+        cache_file = f"{work_dir}_disk_cache_{time.strftime('%Y%m%d%H%M%S')}.pkl"
+        if os.path.exists(work_dir):
+            self.disk_cache = pickle.load(open(cache_file, "rb"))
+        else:
+            self.disk_cache = DiskCache(work_dir, **kwargs)
+            pickle.dump(self.disk_cache, open(cache_file, "wb"))
+
+    def readlines(self, file_type=Union[List, str], mode="r", encoding="utf-8", **kwargs):
+        if file_type is None:
+            file_type = ["txt"]
+        elif isinstance(file_type, str):
+            file_type = [file_type]
+
         lines = []
         for f in self.disk_cache:
-            if os.path.isfile(f):
+            if f.split(".")[-1] in file_type in file_type and os.path.isfile(f) and accessible(f):
                 with open(f, mode=mode, encoding=encoding) as fp:
                     lines += fp.readlines()
         return lines
 
-    def read(self, mode="r", encoding="utf-8", **kwargs):
+    def read(self, file_type=Union[List, str], mode="r", encoding="utf-8", **kwargs):
+        if file_type is None:
+            file_type = ["txt"]
+        elif isinstance(file_type, str):
+            file_type = [file_type]
+
         lines = []
         for f in self.disk_cache:
-            if os.path.isfile(f):
+            if f.split(".")[-1] in file_type in file_type and os.path.isfile(f) and accessible(f):
                 with open(f, mode=mode, encoding=encoding) as fp:
-                    lines += fp.read()
+                    lines += fp.readlines()
         return lines
 
     def writelines(self, content, mode="w", encoding="utf-8", **kwargs):
@@ -1125,19 +1142,3 @@ class FileManager:
                         )
 
         return list(set(res))
-
-if __name__ == "__main__":
-    # disk_cache = DiskCache(
-    #     r"C:\Users\chuan\OneDrive - University of Exeter\AIProjects\PyABSA\CPDP\PROMISE-backup"
-    # )
-    print(time.localtime())
-    fm = FileManager(
-        r"C:\Users\chuan\OneDrive - University of Exeter\AIProjects\PyABSA\CPDP\PROMISE-backup"
-    )
-    print(time.localtime())
-    java_files = fm.find_files(key=".java", use_regex=False, recursive=30)
-    print(time.localtime())
-    py_files = fm.find_files(key=".py")
-    print(time.localtime())
-
-    print(java_files)

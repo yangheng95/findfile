@@ -6,7 +6,7 @@
 # Copyright (C) 2021. All Rights Reserved.
 
 __name__ = "findfile"
-__version__ = "2.0.0dev1"
+__version__ = "2.0.0"
 
 from findfile.find import (
     find_files,

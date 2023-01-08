@@ -19,7 +19,29 @@ This is a package for you to locate your target file(s)/dir(s) easily.
 pip install findfile
 ```
 
-## ready to use
+## ready to go (V2)
+
+```python
+from findfile import FileManager
+
+if __name__ == "__main__":
+
+    # create a FileManager to index your files in the directory
+    fm = FileManager(
+        r"word_dir"
+    )
+    
+    txt_files = fm.find_cwd_files(key=".txt", use_regex=False, recursive=30)
+
+    lines = fm.readlines()  # read all lines in the files
+    
+    png_files = fm.find_cwd_files(key=".png")
+    
+    print(txt_files)
+
+```
+
+## ready to use (V1)
 
 If you have been bothered by FileNotFoundError while the file does exist but misplaced, you can call
 
@@ -41,3 +63,4 @@ target_dir = find_dir(search_path, key, exclude_key)  # search directory instead
 target_dirs = find_dirs(search_path, key, exclude_key)  # search directories 
 
 
+```
