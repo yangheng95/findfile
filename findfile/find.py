@@ -14,6 +14,8 @@ from typing import Union
 
 from termcolor import colored
 
+__FINDFILE_IGNORE__ = [".FFIGNORE", ".ffignore", ".ffi", ".FFI"]
+
 warnings.filterwarnings("once")
 
 
@@ -67,6 +69,8 @@ def _find_files(
         exclude_key = []
     if isinstance(exclude_key, str):
         exclude_key = [exclude_key]
+
+    exclude_key += __FINDFILE_IGNORE__
 
     if isinstance(key, str):
         key = [key]
@@ -171,6 +175,8 @@ def _find_dirs(
         exclude_key = []
     if isinstance(exclude_key, str):
         exclude_key = [exclude_key]
+
+    exclude_key += __FINDFILE_IGNORE__
 
     if isinstance(key, str):
         key = [key]
