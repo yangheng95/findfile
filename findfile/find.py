@@ -75,7 +75,7 @@ def _matches_any(path: Path, patterns: list[re.Pattern] | None) -> bool:
     if not patterns:
         return True
     s = str(path)
-    return any(p.search(s) for p in patterns)
+    return all(p.search(s) for p in patterns)
 
 
 def _iter_paths(
