@@ -8,9 +8,11 @@ import os
 import re
 import shutil
 import warnings
+from collections import deque
 from functools import reduce
 from pathlib import Path
-from typing import Union
+from typing import Iterator, Sequence, Union
+
 
 from termcolor import colored
 
@@ -39,216 +41,163 @@ def covert_path_sep(key_list):
     return key_list
 
 
-def _find_files(
-    search_path: Union[str, Path] = None,
-    key=None,
-    exclude_key=None,
-    use_regex=False,
-    return_relative_path=True,
-    **kwargs
-) -> list:
-    """
-    'search_path': path to search
-    'key': find a set of files/dirs whose absolute path contain the 'key'
-    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integer, recursive search limit
-    'return_relative_path' return the relative path instead of absolute path
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
 
-    :return the files whose path contains the key(s)
+def _compile_patterns(
+    patterns: Sequence[str] | None,
+    use_regex: bool,
+    *,
+    disable_alert: bool = False,
+) -> list[re.Pattern] | None:
+    """Compile *patterns* once. Plain text keys are escaped; case‑insensitive."""
+    if not patterns:
+        return None
+    compiled: list[re.Pattern] = []
+    for p in patterns:
+        try:
+            if use_regex:
+                compiled.append(re.compile(p, flags=re.IGNORECASE))
+            else:
+                compiled.append(re.compile(re.escape(p), flags=re.IGNORECASE))
+        except re.error as exc:
+            if not disable_alert:
+                warnings.warn(
+                    f"Pattern '{p}' could not be compiled: {exc}. Falling back to substring search.",
+                    RuntimeWarning,
+                )
+            compiled.append(re.compile(re.escape(p), flags=re.IGNORECASE))
+    return compiled
+
+
+def _matches_any(path: Path, patterns: list[re.Pattern] | None) -> bool:
+    if not patterns:
+        return True
+    s = str(path)
+    return any(p.search(s) for p in patterns)
+
+
+def _iter_paths(
+    root: Path,
+    want: str,
+    include: list[re.Pattern] | None,
+    exclude: list[re.Pattern] | None,
+    max_depth: int,
+) -> Iterator[Path]:
+    """Breadth‑first traversal that stops at *max_depth* (0 means only *root* itself)."""
+
+    queue: deque[tuple[Path, int]] = deque([(root, 0)])
+    while queue:
+        current, depth = queue.popleft()
+        try:
+            if not current.exists() or current.is_symlink():
+                continue  # skip broken links / non‑existent entries
+
+            if depth > max_depth:
+                continue
+
+            # Decide whether to yield *current* before descending
+            if (want == "file" and current.is_file()) or (want == "dir" and current.is_dir()):
+                if _matches_any(current, include) and not _matches_any(current, exclude):
+                    yield current
+
+            # Descend only into directories (and only if we haven't exceeded depth)
+            if current.is_dir() and depth < max_depth:
+                for child in current.iterdir():
+                    queue.append((child, depth + 1))
+        except PermissionError:
+            # Silently ignore unreadable directories
+            continue
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def _find(
+    search_path: Union[str, Path] | None = None,
+    *,
+    key: Sequence[str] | str | None = None,
+    exclude_key: Sequence[str] | str | None = None,
+    use_regex: bool = False,
+    recursive: int | bool = 5,
+    return_relative_path: bool = True,
+    return_deepest_path: bool = False,
+    disable_alert: bool = False,
+    want: str = "file",  # "file" or "dir"
+) -> list[str]:
+    """Internal unified implementation for both files and dirs.
+
+    Parameters
+    ----------
+    return_deepest_path
+        When *True*, filter the resulting matches so that only those at the greatest
+        depth (relative to *search_path* or CWD) are returned. Useful for “take the
+        deepest hit” semantics.
+    disable_alert
+        Suppress warnings emitted when regex compilation fails.
     """
-    recursive = kwargs.pop("recursive", 5)
+
+    root = Path(search_path or Path.cwd()).expanduser().resolve()
+
+    # Compatibility shim: recursive=True behaves like depth 5 (legacy)
     if recursive is True:
         recursive = 5
+    if recursive is False:
+        recursive = 0
 
-    if not search_path:
-        search_path = os.getcwd()
-
-    res = []
-
-    if not exclude_key:
-        exclude_key = []
+    # Normalise *key* arguments to list[str]
+    if isinstance(key, str):
+        key = [key]
     if isinstance(exclude_key, str):
         exclude_key = [exclude_key]
 
-    exclude_key += __FINDFILE_IGNORE__
+    # Merge with (optional) global ignore list
+    try:
 
-    if isinstance(key, str):
-        key = [key]
+        exclude_combined: list[str] | None = (exclude_key or []) + list(__FINDFILE_IGNORE__)
+    except Exception:
+        exclude_combined = exclude_key  # noqa: F841
 
-    if os.path.isfile(search_path):
-        has_key = True
-        for k in key:
-            try:
-                if use_regex:
-                    if not re.findall(k.lower(), search_path.lower()):
-                        has_key = False
-                        break
-                else:
-                    if not k.lower() in search_path.lower():
-                        has_key = False
-                        break
-            except re.error:
-                warnings.warn(
-                    "FindFile Warning --> Regex pattern error, using string-based search"
-                )
-                if not k.lower() in search_path.lower():
-                    has_key = False
-                    break
+    include = _compile_patterns(key, use_regex, disable_alert=disable_alert)
+    exclude = _compile_patterns(exclude_combined, use_regex, disable_alert=disable_alert)
 
-        if has_key:
-            if exclude_key:
-                has_exclude_key = False
-                for ex_key in exclude_key:
-                    try:
-                        if use_regex:
-                            if re.findall(ex_key.lower(), search_path.lower()):
-                                has_exclude_key = True
-                                break
-                        else:
-                            if ex_key.lower() in search_path.lower():
-                                has_exclude_key = True
-                                break
-                    except re.error:
-                        warnings.warn(
-                            "FindFile Warning ->> Regex pattern error, using string-based search"
-                        )
-                        if ex_key.lower() in search_path.lower():
-                            has_exclude_key = True
-                            break
-                if not has_exclude_key:
-                    res.append(
-                        search_path.replace(os.getcwd() + os.sep, "")
-                        if return_relative_path
-                        else search_path
-                    )
-            else:
-                res.append(
-                    search_path.replace(os.getcwd() + os.sep, "")
-                    if return_relative_path
-                    else search_path
-                )
+    # Collect results eagerly so we can post-process for "deepest" logic
+    path_iter = _iter_paths(
+        root,
+        want=want,
+        include=include,
+        exclude=exclude,
+        max_depth=int(recursive),
+    )
+    paths: list[Path] = list(path_iter)
 
-    if os.path.isdir(search_path) and accessible(search_path):
-        items = os.listdir(search_path)
-        for file in items:
-            if recursive:
-                res += _find_files(
-                    os.path.join(search_path, file),
-                    key=key,
-                    exclude_key=exclude_key,
-                    use_regex=use_regex,
-                    recursive=recursive - 1,
-                    return_relative_path=return_relative_path,
-                    **kwargs
-                )
+    if not paths:
+        return []
 
-    return res
+    # Retain only the deepest match(es) if requested
+    if return_deepest_path:
+        depths = [len(p.relative_to(root if root != Path.cwd() else Path.cwd()).parts) for p in paths]
+        max_depth = max(depths)
+        paths = [p for p, d in zip(paths, depths) if d == max_depth]
+
+    if return_relative_path:
+        return [str(p.relative_to(Path.cwd())) for p in paths]
+    return [str(p) for p in paths]
 
 
-def _find_dirs(
-    search_path: Union[str, Path] = None,
-    key=None,
-    exclude_key=None,
-    use_regex=False,
-    return_relative_path=True,
-    **kwargs
-) -> list:
-    """
-    'search_path': path to search
-    'key': find a set of files/dirs whose absolute path contain the 'key'
-    'exclude_key': file whose absolute path contains 'exclude_key' will be ignored
-    'recursive' integer, recursive search limit
-    'return_relative_path' return the relative path instead of absolute path
 
-    :return the dirs whose path contains the key(s)
-    """
-    recursive = kwargs.pop("recursive", 5)
-    if recursive is True:
-        recursive = 5
 
-    if not search_path:
-        search_path = os.getcwd()
+def _find_files(**kwargs) -> list[str]:
+    """Find files matching *key* within *search_path* (depth‑limited)."""
 
-    res = []
+    return _find(want="file", **kwargs)
 
-    if not exclude_key:
-        exclude_key = []
-    if isinstance(exclude_key, str):
-        exclude_key = [exclude_key]
 
-    exclude_key += __FINDFILE_IGNORE__
+def _find_dirs(**kwargs) -> list[str]:
+    """Find directories matching *key* within *search_path* (depth‑limited)."""
 
-    if isinstance(key, str):
-        key = [key]
-
-    if os.path.isdir(search_path):
-        has_key = True
-        for k in key:
-            try:
-                if use_regex:
-                    if not re.findall(k.lower(), search_path.lower()):
-                        has_key = False
-                        break
-                else:
-                    if not k.lower() in search_path.lower():
-                        has_key = False
-                        break
-            except re.error:
-                warnings.warn(
-                    "FindFile Warning --> Regex pattern error, using string-based search"
-                )
-                if not k.lower() in search_path.lower():
-                    has_key = False
-                    break
-
-        if has_key:
-            if exclude_key:
-                has_exclude_key = False
-                for ex_key in exclude_key:
-                    try:
-                        if use_regex:
-                            if re.findall(ex_key.lower(), search_path.lower()):
-                                has_exclude_key = True
-                                break
-                        else:
-                            if ex_key.lower() in search_path.lower():
-                                has_exclude_key = True
-                                break
-                    except re.error:
-                        warnings.warn(
-                            "FindFile Warning --> Regex pattern error, using string-based search"
-                        )
-                        if ex_key.lower() in search_path.lower():
-                            has_exclude_key = True
-                            break
-                if not has_exclude_key:
-                    res.append(
-                        search_path.replace(os.getcwd() + os.sep, "")
-                        if return_relative_path
-                        else search_path
-                    )
-            else:
-                res.append(
-                    search_path.replace(os.getcwd() + os.sep, "")
-                    if return_relative_path
-                    else search_path
-                )
-
-    if os.path.isdir(search_path) and accessible(search_path):
-        items = os.listdir(search_path)
-        for file in items:
-            if recursive:
-                res += _find_dirs(
-                    os.path.join(search_path, file),
-                    key=key,
-                    exclude_key=exclude_key,
-                    use_regex=use_regex,
-                    recursive=recursive - 1,
-                    return_relative_path=return_relative_path,
-                    **kwargs
-                )
-
-    return res
+    return _find(want="dir", **kwargs)
 
 
 def find_file(

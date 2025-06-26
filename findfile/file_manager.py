@@ -63,31 +63,6 @@ class DiskCache(List):
     def __len__(self):
         return len(self.disk_list_cache)
 
-    # def __collect_disk_object(
-    #     self, path: Union[str, Path], disk_file_cache: Dict = None
-    # ):
-    #
-    #     if disk_file_cache is None:
-    #         disk_file_cache = dict()
-    #
-    #     if isinstance(path, str) or isinstance(path, Path):
-    #         objs = findfile.find_files(path, "", recursive=1) + findfile.find_dirs(
-    #             path, "", recursive=1
-    #         )
-    #     else:
-    #         raise ValueError(f"Invalid path: {path}")
-    #
-    #     if path in objs:
-    #         objs.remove(path)
-    #
-    #     disk_file_cache[path] = objs
-    #
-    #     for obj in objs:
-    #         if os.path.exists(obj) and os.path.isdir(obj):
-    #             disk_file_cache[path][obj] = self.__collect_disk_object(obj)
-    #
-    #     return disk_file_cache
-
 
 class FileManager:
 
