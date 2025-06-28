@@ -426,7 +426,7 @@ def find_files(
             raise ValueError("The key and or_key arg are contradictory!")
         for key in or_key:
             res += _find_files(
-                search_path,
+                search_path=search_path,
                 key=key,
                 exclude_key=exclude_key,
                 use_regex=use_regex,
@@ -436,7 +436,7 @@ def find_files(
             )
     else:
         res = _find_files(
-            search_path,
+            search_path=search_path,
             key=key,
             exclude_key=exclude_key,
             use_regex=use_regex,
@@ -684,7 +684,7 @@ def find_dirs(
             raise ValueError("The key and or_key arg are contradictory!")
         for key in or_key:
             res += _find_dirs(
-                search_path,
+                search_path=search_path,
                 key=key,
                 exclude_key=exclude_key,
                 use_regex=use_regex,
@@ -696,7 +696,7 @@ def find_dirs(
 
     else:
         res = _find_dirs(
-            search_path,
+            search_path=search_path,
             key=key,
             exclude_key=exclude_key,
             use_regex=use_regex,
