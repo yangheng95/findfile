@@ -71,19 +71,47 @@ def _compile_patterns(
     return compiled
 
 
+# MODIFIED: Split matching logic into separate functions for include and exclude
+def _matches_any_include(path: Path, patterns: list[re.Pattern] | None) -> bool:
+    """Check if path matches any include pattern (OR logic)."""
+    if not patterns:
+        return True
+    s = str(path)
+    return any(p.search(s) for p in patterns)
+
+
+def _matches_any_exclude_or(path: Path, patterns: list[re.Pattern] | None) -> bool:
+    """Check if path matches any exclude pattern (OR logic - NEW BEHAVIOR)."""
+    if not patterns:
+        return False
+    s = str(path)
+    return any(p.search(s) for p in patterns)  # OR logic: exclude if ANY pattern matches
+
+
+def _matches_any_exclude_and(path: Path, patterns: list[re.Pattern] | None) -> bool:
+    """Check if path matches all exclude patterns (AND logic - ORIGINAL BEHAVIOR)."""
+    if not patterns:
+        return False
+    s = str(path)
+    return all(p.search(s) for p in patterns)  # AND logic: exclude only if ALL patterns match
+
+
 def _matches_any(path: Path, patterns: list[re.Pattern] | None) -> bool:
+    """Original function kept for backward compatibility."""
     if not patterns:
         return True
     s = str(path)
     return all(p.search(s) for p in patterns)
 
 
+# MODIFIED: Updated _iter_paths to support both OR and AND logic for exclusions
 def _iter_paths(
-    root: Path,
-    want: str,
-    include: list[re.Pattern] | None,
-    exclude: list[re.Pattern] | None,
-    max_depth: int,
+        root: Path,
+        want: str,
+        include: list[re.Pattern] | None,
+        exclude: list[re.Pattern] | None,
+        max_depth: int,
+        exclude_logic: str = "or",  # NEW PARAMETER
 ) -> Iterator[Path]:
     """Breadth‑first traversal that stops at *max_depth* (0 means only *root* itself)."""
 
@@ -99,7 +127,15 @@ def _iter_paths(
 
             # Decide whether to yield *current* before descending
             if (want == "file" and current.is_file()) or (want == "dir" and current.is_dir()):
-                if _matches_any(current, include) and not _matches_any(current, exclude):
+                # MODIFIED: Use appropriate exclusion logic based on exclude_logic parameter
+                should_include = _matches_any_include(current, include)
+
+                if exclude_logic == "or":
+                    should_exclude = _matches_any_exclude_or(current, exclude)
+                else:  # "and" or any other value defaults to original behavior
+                    should_exclude = _matches_any_exclude_and(current, exclude)
+
+                if should_include and not should_exclude:
                     yield current
 
             # Descend only into directories (and only if we haven't exceeded depth)
@@ -110,30 +146,36 @@ def _iter_paths(
             # Silently ignore unreadable directories
             continue
 
+
 # ---------------------------------------------------------------------------
-# Public API
+# MODIFIED Public API - Added exclude_logic parameter
 # ---------------------------------------------------------------------------
 
 def _find(
-    search_path: Union[str, Path] | None = None,
-    *,
-    key: Sequence[str] | str | None = None,
-    exclude_key: Sequence[str] | str | None = None,
-    use_regex: bool = False,
-    recursive: int | bool = 5,
-    return_relative_path: bool = True,
-    return_deepest_path: bool = False,
-    disable_alert: bool = False,
-    want: str = "file",  # "file" or "dir"
+        search_path: Union[str, Path] | None = None,
+        *,
+        key: Sequence[str] | str | None = None,
+        exclude_key: Sequence[str] | str | None = None,
+        use_regex: bool = False,
+        recursive: int | bool = 5,
+        return_relative_path: bool = True,
+        return_deepest_path: bool = False,
+        disable_alert: bool = False,
+        want: str = "file",  # "file" or "dir"
+        exclude_logic: str = "or",  # NEW PARAMETER: "or" or "and"
 ) -> list[str]:
     """Internal unified implementation for both files and dirs.
 
     Parameters
     ----------
+    exclude_logic : str, default "or"
+        Logic for exclude_key patterns:
+        - "or": exclude if path matches ANY exclude pattern (recommended)
+        - "and": exclude if path matches ALL exclude patterns (original behavior)
     return_deepest_path
         When *True*, filter the resulting matches so that only those at the greatest
-        depth (relative to *search_path* or CWD) are returned. Useful for “take the
-        deepest hit” semantics.
+        depth (relative to *search_path* or CWD) are returned. Useful for "take the
+        deepest hit" semantics.
     disable_alert
         Suppress warnings emitted when regex compilation fails.
     """
@@ -154,21 +196,21 @@ def _find(
 
     # Merge with (optional) global ignore list
     try:
-
         exclude_combined: list[str] | None = (exclude_key or []) + list(__FINDFILE_IGNORE__)
     except Exception:
-        exclude_combined = exclude_key  # noqa: F841
+        exclude_combined = exclude_key
 
     include = _compile_patterns(key, use_regex, disable_alert=disable_alert)
     exclude = _compile_patterns(exclude_combined, use_regex, disable_alert=disable_alert)
 
-    # Collect results eagerly so we can post-process for "deepest" logic
+    # MODIFIED: Pass exclude_logic parameter to _iter_paths
     path_iter = _iter_paths(
         root,
         want=want,
         include=include,
         exclude=exclude,
         max_depth=int(recursive),
+        exclude_logic=exclude_logic,  # NEW PARAMETER
     )
     paths: list[Path] = list(path_iter)
 
@@ -186,7 +228,14 @@ def _find(
     return [str(p) for p in paths]
 
 
+def _find_files(**kwargs) -> list[str]:
+    """Find files matching *key* within *search_path* (depth‑limited)."""
+    return _find(want="file", **kwargs)
 
+
+def _find_dirs(**kwargs) -> list[str]:
+    """Find directories matching *key* within *search_path* (depth‑limited)."""
+    return _find(want="dir", **kwargs)
 
 def _find_files(**kwargs) -> list[str]:
     """Find files matching *key* within *search_path* (depth‑limited)."""
