@@ -152,13 +152,6 @@ commit_and_push() {
         exit 1
     }
 
-    # Push to mirror if it exists
-    if git remote | grep -q "mirror"; then
-        git push mirror "$BRANCH" || {
-            log_warning "Failed to push to mirror (continuing anyway)"
-        }
-    fi
-
     log_success "Changes committed and pushed"
 }
 
