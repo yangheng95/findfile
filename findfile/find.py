@@ -45,6 +45,7 @@ def covert_path_sep(key_list):
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _compile_patterns(
     patterns: Sequence[str] | None,
     use_regex: bool,
@@ -79,6 +80,7 @@ def _matches_any_include(path: Path, patterns: list[re.Pattern] | None) -> bool:
     s = str(path)
     return any(p.search(s) for p in patterns)
 
+
 def _matches_all_include(path: Path, patterns: list[re.Pattern] | None) -> bool:
     """Check if path matches all include patterns (AND logic)."""
     if not patterns:
@@ -86,12 +88,15 @@ def _matches_all_include(path: Path, patterns: list[re.Pattern] | None) -> bool:
     s = str(path)
     return all(p.search(s) for p in patterns)
 
+
 def _matches_any_exclude_or(path: Path, patterns: list[re.Pattern] | None) -> bool:
     """Check if path matches any exclude pattern (OR logic - NEW BEHAVIOR)."""
     if not patterns:
         return False
     s = str(path)
-    return any(p.search(s) for p in patterns)  # OR logic: exclude if ANY pattern matches
+    return any(
+        p.search(s) for p in patterns
+    )  # OR logic: exclude if ANY pattern matches
 
 
 def _matches_any_exclude_and(path: Path, patterns: list[re.Pattern] | None) -> bool:
@@ -99,7 +104,9 @@ def _matches_any_exclude_and(path: Path, patterns: list[re.Pattern] | None) -> b
     if not patterns:
         return False
     s = str(path)
-    return all(p.search(s) for p in patterns)  # AND logic: exclude only if ALL patterns match
+    return all(
+        p.search(s) for p in patterns
+    )  # AND logic: exclude only if ALL patterns match
 
 
 def _matches_any(path: Path, patterns: list[re.Pattern] | None) -> bool:
@@ -112,12 +119,12 @@ def _matches_any(path: Path, patterns: list[re.Pattern] | None) -> bool:
 
 # MODIFIED: Updated _iter_paths to support both OR and AND logic for exclusions
 def _iter_paths(
-        root: Path,
-        want: str,
-        include: list[re.Pattern] | None,
-        exclude: list[re.Pattern] | None,
-        max_depth: int,
-        exclude_logic: str = "or",  # NEW PARAMETER
+    root: Path,
+    want: str,
+    include: list[re.Pattern] | None,
+    exclude: list[re.Pattern] | None,
+    max_depth: int,
+    exclude_logic: str = "or",  # NEW PARAMETER
 ) -> Iterator[Path]:
     """Breadth‑first traversal that stops at *max_depth* (0 means only *root* itself)."""
 
@@ -132,7 +139,9 @@ def _iter_paths(
                 continue
 
             # Decide whether to yield *current* before descending
-            if (want == "file" and current.is_file()) or (want == "dir" and current.is_dir()):
+            if (want == "file" and current.is_file()) or (
+                want == "dir" and current.is_dir()
+            ):
 
                 should_include = _matches_all_include(current, include)
 
@@ -157,18 +166,19 @@ def _iter_paths(
 # MODIFIED Public API - Added exclude_logic parameter
 # ---------------------------------------------------------------------------
 
+
 def _find(
-        search_path: Union[str, Path] | None = None,
-        *,
-        key: Sequence[str] | str | None = None,
-        exclude_key: Sequence[str] | str | None = None,
-        use_regex: bool = False,
-        recursive: int | bool = 5,
-        return_relative_path: bool = True,
-        return_deepest_path: bool = False,
-        disable_alert: bool = False,
-        want: str = "file",  # "file" or "dir"
-        exclude_logic: str = "or",  # NEW PARAMETER: "or" or "and"
+    search_path: Union[str, Path] | None = None,
+    *,
+    key: Sequence[str] | str | None = None,
+    exclude_key: Sequence[str] | str | None = None,
+    use_regex: bool = False,
+    recursive: int | bool = 5,
+    return_relative_path: bool = True,
+    return_deepest_path: bool = False,
+    disable_alert: bool = False,
+    want: str = "file",  # "file" or "dir"
+    exclude_logic: str = "or",  # NEW PARAMETER: "or" or "and"
 ) -> list[str]:
     """Internal unified implementation for both files and dirs.
 
@@ -202,12 +212,16 @@ def _find(
 
     # Merge with (optional) global ignore list
     try:
-        exclude_combined: list[str] | None = (exclude_key or []) + list(__FINDFILE_IGNORE__)
+        exclude_combined: list[str] | None = (exclude_key or []) + list(
+            __FINDFILE_IGNORE__
+        )
     except Exception:
         exclude_combined = exclude_key
 
     include = _compile_patterns(key, use_regex, disable_alert=disable_alert)
-    exclude = _compile_patterns(exclude_combined, use_regex, disable_alert=disable_alert)
+    exclude = _compile_patterns(
+        exclude_combined, use_regex, disable_alert=disable_alert
+    )
 
     # MODIFIED: Pass exclude_logic parameter to _iter_paths
     path_iter = _iter_paths(
@@ -225,7 +239,10 @@ def _find(
 
     # Retain only the deepest match(es) if requested
     if return_deepest_path:
-        depths = [len(p.relative_to(root if root != Path.cwd() else Path.cwd()).parts) for p in paths]
+        depths = [
+            len(p.relative_to(root if root != Path.cwd() else Path.cwd()).parts)
+            for p in paths
+        ]
         max_depth = max(depths)
         paths = [p for p, d in zip(paths, depths) if d == max_depth]
 
@@ -242,6 +259,7 @@ def _find_files(**kwargs) -> list[str]:
 def _find_dirs(**kwargs) -> list[str]:
     """Find directories matching *key* within *search_path* (depth‑limited)."""
     return _find(want="dir", **kwargs)
+
 
 def _find_files(**kwargs) -> list[str]:
     """Find files matching *key* within *search_path* (depth‑limited)."""
@@ -263,7 +281,7 @@ def find_file(
     return_relative_path=True,
     return_deepest_path=False,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ) -> str:
     """
     'search_path': path to search
@@ -301,7 +319,7 @@ def find_file(
                 return_relative_path=return_relative_path,
                 return_deepest_path=return_deepest_path,
                 disable_alert=disable_alert,
-                **kwargs
+                **kwargs,
             )
     else:
         res = _find_files(
@@ -312,7 +330,7 @@ def find_file(
             return_relative_path=return_relative_path,
             return_deepest_path=return_deepest_path,
             disable_alert=disable_alert,
-            **kwargs
+            **kwargs,
         )
 
     if not return_deepest_path:
@@ -337,7 +355,7 @@ def find_cwd_file(
     return_relative_path=True,
     return_deepest_path=False,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ):
     """
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -367,7 +385,7 @@ def find_cwd_file(
                 return_relative_path=return_relative_path,
                 return_deepest_path=return_deepest_path,
                 disable_alert=disable_alert,
-                **kwargs
+                **kwargs,
             )
     else:
         res = _find_files(
@@ -378,7 +396,7 @@ def find_cwd_file(
             return_relative_path=return_relative_path,
             return_deepest_path=return_deepest_path,
             disable_alert=disable_alert,
-            **kwargs
+            **kwargs,
         )
 
     if not return_deepest_path:
@@ -402,7 +420,7 @@ def find_cwd_files(
     use_regex=False,
     return_relative_path=True,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ):
     """
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -434,7 +452,7 @@ def find_cwd_files(
                 use_regex=use_regex,
                 return_relative_path=return_relative_path,
                 disable_alert=disable_alert,
-                **kwargs
+                **kwargs,
             )
     else:
         res = _find_files(
@@ -444,7 +462,7 @@ def find_cwd_files(
             use_regex=use_regex,
             return_relative_path=return_relative_path,
             disable_alert=disable_alert,
-            **kwargs
+            **kwargs,
         )
     return res
 
@@ -456,7 +474,7 @@ def find_files(
     use_regex=False,
     return_relative_path=True,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ):
     """
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -487,7 +505,7 @@ def find_files(
                 use_regex=use_regex,
                 return_relative_path=return_relative_path,
                 disable_alert=disable_alert,
-                **kwargs
+                **kwargs,
             )
     else:
         res = _find_files(
@@ -497,7 +515,7 @@ def find_files(
             use_regex=use_regex,
             return_relative_path=return_relative_path,
             disable_alert=disable_alert,
-            **kwargs
+            **kwargs,
         )
     return res
 
@@ -510,7 +528,7 @@ def find_dir(
     return_relative_path=True,
     return_deepest_path=False,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ) -> str:
     """
     'search_path': path to search
@@ -540,7 +558,7 @@ def find_dir(
                 use_regex=use_regex,
                 return_relative_path=return_relative_path,
                 return_deepest_path=return_deepest_path,
-                **kwargs
+                **kwargs,
             )
 
     else:
@@ -551,7 +569,7 @@ def find_dir(
             use_regex=use_regex,
             return_relative_path=return_relative_path,
             return_deepest_path=return_deepest_path,
-            **kwargs
+            **kwargs,
         )
 
     if not return_deepest_path:
@@ -576,7 +594,7 @@ def find_cwd_dir(
     return_relative_path=True,
     return_deepest_path=False,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ):
     """
     'key': find a set of files/dirs whose absolute path contain the 'key',
@@ -606,7 +624,7 @@ def find_cwd_dir(
                 return_relative_path=return_relative_path,
                 return_deepest_path=return_deepest_path,
                 disable_alert=disable_alert,
-                **kwargs
+                **kwargs,
             )
 
     else:
@@ -618,7 +636,7 @@ def find_cwd_dir(
             return_relative_path=return_relative_path,
             return_deepest_path=return_deepest_path,
             disable_alert=disable_alert,
-            **kwargs
+            **kwargs,
         )
 
     if not return_deepest_path:
@@ -642,7 +660,7 @@ def find_cwd_dirs(
     use_regex=False,
     return_relative_path=True,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ):
     """
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -675,7 +693,7 @@ def find_cwd_dirs(
                 use_regex=use_regex,
                 return_relative_path=return_relative_path,
                 disable_alert=disable_alert,
-                **kwargs
+                **kwargs,
             )
 
     else:
@@ -686,7 +704,7 @@ def find_cwd_dirs(
             use_regex=use_regex,
             return_relative_path=return_relative_path,
             disable_alert=disable_alert,
-            **kwargs
+            **kwargs,
         )
 
     if kwargs.get("return_leaf_only", True):
@@ -712,7 +730,7 @@ def find_dirs(
     return_relative_path=True,
     return_deepest_path=False,
     disable_alert=False,
-    **kwargs
+    **kwargs,
 ):
     """
     'key': find a set of files/dirs whose absolute path contain the 'key'
@@ -746,7 +764,7 @@ def find_dirs(
                 return_relative_path=return_relative_path,
                 return_deepest_path=return_deepest_path,
                 disable_alert=disable_alert,
-                **kwargs
+                **kwargs,
             )
 
     else:
@@ -758,7 +776,7 @@ def find_dirs(
             return_relative_path=return_relative_path,
             return_deepest_path=return_deepest_path,
             disable_alert=disable_alert,
-            **kwargs
+            **kwargs,
         )
 
     if kwargs.get("return_leaf_only", True):
@@ -794,7 +812,7 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
             use_regex=kwargs.pop("use_regex", False),
             recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
-            **kwargs
+            **kwargs,
         )
 
         print(colored("FindFile Warning: Remove files {}".format(fs), "red"))
@@ -821,7 +839,7 @@ def rm_files(path=None, and_key=None, exclude_key=None, **kwargs):
                 use_regex=kwargs.pop("use_regex", False),
                 recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
-                **kwargs
+                **kwargs,
             )
 
         print(colored("FindFile Warning: Remove files {}".format(fs), "red"))
@@ -859,7 +877,7 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
             use_regex=kwargs.pop("use_regex", False),
             recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
-            **kwargs
+            **kwargs,
         )
 
         print(colored("FindFile Warning: Remove dirs {}".format(ds), "red"))
@@ -886,7 +904,7 @@ def rm_dirs(path=None, and_key=None, exclude_key=None, **kwargs):
                 use_regex=kwargs.pop("use_regex", False),
                 recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
-                **kwargs
+                **kwargs,
             )
 
         print(colored("FindFile Warning: Remove dirs {}".format(ds), "red"))
@@ -925,7 +943,7 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
             use_regex=kwargs.pop("use_regex", False),
             recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
-            **kwargs
+            **kwargs,
         )
 
         if len(fs) > 1:
@@ -957,7 +975,7 @@ def rm_file(path=None, and_key=None, exclude_key=None, **kwargs):
                 use_regex=False,
                 recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
-                **kwargs
+                **kwargs,
             )
         if len(fs) > 1:
             raise ValueError("Multi-files detected while removing single file.")
@@ -995,7 +1013,7 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
             use_regex=kwargs.pop("use_regex", False),
             recursive=kwargs.pop("recursive", 10),
             return_relative_path=kwargs.pop("return_relative_path", False),
-            **kwargs
+            **kwargs,
         )
 
         if len(ds) > 1:
@@ -1027,7 +1045,7 @@ def rm_dir(path=None, and_key=None, exclude_key=None, **kwargs):
                 use_regex=kwargs.pop("use_regex", False),
                 recursive=kwargs.pop("recursive", 10),
                 return_relative_path=kwargs.pop("return_relative_path", False),
-                **kwargs
+                **kwargs,
             )
 
         if len(ds) > 1:

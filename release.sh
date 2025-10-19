@@ -95,7 +95,8 @@ validate_arguments() {
 format_code() {
     log_info "Formatting code with black..."
     if command -v black &> /dev/null; then
-        black omnigenome omnigenbench || {
+        # Format the project's package directory
+        black findfile || {
             log_warning "Black formatting failed, continuing anyway"
         }
     else
@@ -162,30 +163,17 @@ build_packages() {
     # Clean up first
     cleanup
 
-    # Check if setup files exist
-    if [ ! -f "setup_omnigenome.py" ]; then
-        log_error "setup_omnigenome.py not found"
+    # Check if setup file exists
+    if [ ! -f "setup.py" ]; then
+        log_error "setup.py not found"
         exit 1
     fi
 
-    if [ ! -f "setup_omnigenbench.py" ]; then
-        log_error "setup_omnigenbench.py not found"
+    # Build the package
+    if ! python setup.py sdist bdist_wheel; then
+        log_error "Failed to build"
         exit 1
     fi
-
-    # Build omnigenome first
-    log_info "Building omnigenome package..."
-    python setup_omnigenome.py sdist bdist_wheel || {
-        log_error "Failed to build omnigenome package"
-        exit 1
-    }
-
-    # Build omnigenbench
-    log_info "Building omnigenbench package..."
-    python setup_omnigenbench.py sdist bdist_wheel || {
-        log_error "Failed to build omnigenbench package"
-        exit 1
-    }
 
     log_success "Packages built successfully"
 }

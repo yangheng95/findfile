@@ -15,12 +15,18 @@ from typing import Union, List
 
 from findfile.find import accessible
 
-from findfile.find import find_dir, find_dirs, find_file, find_files # noqa: F401
-from findfile.find import rm_dir, rm_dirs, rm_file, rm_files # noqa: F401
-from findfile.find import rm_cwd_dirs, rm_cwd_files # noqa: F401
-from findfile.find import find_cwd_dir, find_cwd_dirs, find_cwd_file, find_cwd_files # noqa: F401
+from findfile.find import find_dir, find_dirs, find_file, find_files  # noqa: F401
+from findfile.find import rm_dir, rm_dirs, rm_file, rm_files  # noqa: F401
+from findfile.find import rm_cwd_dirs, rm_cwd_files  # noqa: F401
+from findfile.find import (
+    find_cwd_dir,
+    find_cwd_dirs,
+    find_cwd_file,
+    find_cwd_files,
+)  # noqa: F401
 
 from findfile.find import __FINDFILE_IGNORE__
+
 
 class DiskCache(List):
     def __init__(self, work_dir: Union[str, Path], **kwargs):
@@ -68,20 +74,20 @@ class FileManager:
 
     def __init__(self, work_dir, **kwargs):
 
-        self. find_dir = find_dir
-        self. find_dirs = find_dirs
-        self. find_file = find_file
-        self. find_files = find_files
-        self. rm_dir = rm_dir
-        self. rm_dirs = rm_dirs
-        self. rm_file = rm_file
-        self. rm_files = rm_files
-        self. rm_cwd_dirs = rm_cwd_dirs
-        self. rm_cwd_files = rm_cwd_files
-        self. find_cwd_dir = find_cwd_dir
-        self. find_cwd_dirs = find_cwd_dirs
-        self. find_cwd_file = find_cwd_file
-        self. find_cwd_files = find_cwd_files
+        self.find_dir = find_dir
+        self.find_dirs = find_dirs
+        self.find_file = find_file
+        self.find_files = find_files
+        self.rm_dir = rm_dir
+        self.rm_dirs = rm_dirs
+        self.rm_file = rm_file
+        self.rm_files = rm_files
+        self.rm_cwd_dirs = rm_cwd_dirs
+        self.rm_cwd_files = rm_cwd_files
+        self.find_cwd_dir = find_cwd_dir
+        self.find_cwd_dirs = find_cwd_dirs
+        self.find_cwd_file = find_cwd_file
+        self.find_cwd_files = find_cwd_files
 
         self.__FINDFILE_IGNORE__ = __FINDFILE_IGNORE__
 
@@ -94,7 +100,9 @@ class FileManager:
             self.disk_cache = DiskCache(work_dir, **kwargs)
             pickle.dump(self.disk_cache, open(cache_file, "wb"))
 
-    def readlines(self, file_type=Union[List, str], mode="r", encoding="utf-8", **kwargs):
+    def readlines(
+        self, file_type=Union[List, str], mode="r", encoding="utf-8", **kwargs
+    ):
         if file_type is None:
             file_type = ["txt"]
         elif isinstance(file_type, str):
@@ -102,7 +110,11 @@ class FileManager:
 
         lines = []
         for f in self.disk_cache:
-            if f.split(".")[-1] in file_type in file_type and os.path.isfile(f) and accessible(f):
+            if (
+                f.split(".")[-1] in file_type in file_type
+                and os.path.isfile(f)
+                and accessible(f)
+            ):
                 with open(f, mode=mode, encoding=encoding) as fp:
                     lines += fp.readlines()
         return lines
@@ -115,7 +127,11 @@ class FileManager:
 
         lines = []
         for f in self.disk_cache:
-            if f.split(".")[-1] in file_type in file_type and os.path.isfile(f) and accessible(f):
+            if (
+                f.split(".")[-1] in file_type in file_type
+                and os.path.isfile(f)
+                and accessible(f)
+            ):
                 with open(f, mode=mode, encoding=encoding) as fp:
                     lines += fp.readlines()
         return lines
@@ -125,4 +141,3 @@ class FileManager:
             if os.path.isfile(f):
                 with open(f, mode=mode, encoding=encoding) as fp:
                     fp.write(content)
-
