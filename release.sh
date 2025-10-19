@@ -148,10 +148,7 @@ commit_and_push() {
         log_warning "Nothing to commit or commit failed"
     }
 
-    git push "$BRANCH" || {
-        log_error "Failed to push to origin"
-        exit 1
-    }
+    git push
 
     log_success "Changes committed and pushed"
 }
