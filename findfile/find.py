@@ -79,6 +79,12 @@ def _matches_any_include(path: Path, patterns: list[re.Pattern] | None) -> bool:
     s = str(path)
     return any(p.search(s) for p in patterns)
 
+def _matches_all_include(path: Path, patterns: list[re.Pattern] | None) -> bool:
+    """Check if path matches all include patterns (AND logic)."""
+    if not patterns:
+        return True
+    s = str(path)
+    return all(p.search(s) for p in patterns)
 
 def _matches_any_exclude_or(path: Path, patterns: list[re.Pattern] | None) -> bool:
     """Check if path matches any exclude pattern (OR logic - NEW BEHAVIOR)."""
@@ -127,8 +133,8 @@ def _iter_paths(
 
             # Decide whether to yield *current* before descending
             if (want == "file" and current.is_file()) or (want == "dir" and current.is_dir()):
-                # MODIFIED: Use appropriate exclusion logic based on exclude_logic parameter
-                should_include = _matches_any_include(current, include)
+
+                should_include = _matches_all_include(current, include)
 
                 if exclude_logic == "or":
                     should_exclude = _matches_any_exclude_or(current, exclude)
