@@ -6,14 +6,12 @@
 # huggingface: https://huggingface.co/yangheng
 # google scholar: https://scholar.google.com/citations?user=NPq5a_0AAAAJ&hl=en
 # Copyright (C) 2021. All Rights Reserved.
-import os.path
+import os
 import pickle
 import time
 from pathlib import Path
 from typing import Union, List
 
-
-from findfile.find import accessible
 
 from findfile.find import find_dir, find_dirs, find_file, find_files  # noqa: F401
 from findfile.find import rm_dir, rm_dirs, rm_file, rm_files  # noqa: F401
@@ -28,24 +26,38 @@ from findfile.find import (
 from findfile.find import __FINDFILE_IGNORE__
 
 
-class DiskCache(List):
+class DiskCache(list):
     def __init__(self, work_dir: Union[str, Path], **kwargs):
-        if os.path.exists(work_dir):
-            self.work_dir = work_dir
+        recursive = kwargs.get("recursive", 30)
+        # Resolve or locate working directory
+        if work_dir and os.path.isdir(work_dir):
+            self.work_dir = str(Path(work_dir).resolve())
         else:
-            self.work_dir = find_dir(
-                work_dir,
-                "",
+            # Try to locate the directory by key in CWD
+            located = find_dir(
+                search_path=None,
+                and_key=str(work_dir) if work_dir is not None else "",
+                recursive=recursive,
+                return_relative_path=False,
+                disable_alert=True,
             )
+            if not located:
+                raise ValueError(f"Work directory '{work_dir}' not found")
+            self.work_dir = located
 
+        # Build initial list cache (absolute paths)
         self.disk_list_cache = find_files(
             self.work_dir,
-            "",
-            **kwargs,
+            and_key="",
+            recursive=recursive,
+            return_relative_path=False,
+            disable_alert=True,
         ) + find_dirs(
             self.work_dir,
-            "",
-            **kwargs,
+            and_key="",
+            recursive=recursive,
+            return_relative_path=False,
+            disable_alert=True,
         )
 
         self.kwargs = kwargs
@@ -53,8 +65,23 @@ class DiskCache(List):
         super().__init__(self.disk_list_cache)
 
     def recache(self, **kwargs):
-        self.disk_file_cache = set(find_files(self.work_dir, "", **kwargs))
-        super().__init__(self.disk_file_cache)
+        recursive = kwargs.get("recursive", self.kwargs.get("recursive", 30))
+        files = find_files(
+            self.work_dir,
+            and_key="",
+            recursive=recursive,
+            return_relative_path=False,
+            disable_alert=True,
+        )
+        dirs = find_dirs(
+            self.work_dir,
+            and_key="",
+            recursive=recursive,
+            return_relative_path=False,
+            disable_alert=True,
+        )
+        self.disk_list_cache = files + dirs
+        super().__init__(self.disk_list_cache)
         return self
 
     def __iter__(self):
@@ -92,17 +119,25 @@ class FileManager:
         self.__FINDFILE_IGNORE__ = __FINDFILE_IGNORE__
 
         self.recursive = kwargs.get("recursive", 30)
-        self.work_dir = work_dir
-        cache_file = f"{work_dir}_disk_cache_{time.strftime('%Y%m%d%H%M%S')}.pkl"
-        if os.path.exists(work_dir):
-            self.disk_cache = pickle.load(open(cache_file, "rb"))
-        else:
-            self.disk_cache = DiskCache(work_dir, **kwargs)
-            pickle.dump(self.disk_cache, open(cache_file, "wb"))
+        self.work_dir = (
+            str(Path(work_dir).resolve()) if os.path.isdir(work_dir) else work_dir
+        )
+        # Use a stable cache file inside the work directory
+        cache_file = None
+        if self.work_dir and os.path.isdir(self.work_dir):
+            cache_file = os.path.join(self.work_dir, ".findfile_disk_cache.pkl")
 
-    def readlines(
-        self, file_type=Union[List, str], mode="r", encoding="utf-8", **kwargs
-    ):
+        # Build or load cache
+        if cache_file and os.path.isfile(cache_file):
+            with open(cache_file, "rb") as fp:
+                self.disk_cache = pickle.load(fp)
+        else:
+            self.disk_cache = DiskCache(self.work_dir, **kwargs)
+            if cache_file:
+                with open(cache_file, "wb") as fp:
+                    pickle.dump(self.disk_cache, fp)
+
+    def readlines(self, file_type=None, mode="r", encoding="utf-8", **kwargs):
         if file_type is None:
             file_type = ["txt"]
         elif isinstance(file_type, str):
@@ -110,16 +145,15 @@ class FileManager:
 
         lines = []
         for f in self.disk_cache:
-            if (
-                f.split(".")[-1] in file_type in file_type
-                and os.path.isfile(f)
-                and accessible(f)
-            ):
-                with open(f, mode=mode, encoding=encoding) as fp:
-                    lines += fp.readlines()
+            if os.path.isfile(f):
+                ext = Path(f).suffix.lower().lstrip(".")
+                exts = [str(e).lower().lstrip(".") for e in file_type]
+                if ext in exts and os.access(f, os.R_OK):
+                    with open(f, mode=mode, encoding=encoding) as fp:
+                        lines += fp.readlines()
         return lines
 
-    def read(self, file_type=Union[List, str], mode="r", encoding="utf-8", **kwargs):
+    def read(self, file_type=None, mode="r", encoding="utf-8", **kwargs):
         if file_type is None:
             file_type = ["txt"]
         elif isinstance(file_type, str):
@@ -127,13 +161,12 @@ class FileManager:
 
         lines = []
         for f in self.disk_cache:
-            if (
-                f.split(".")[-1] in file_type in file_type
-                and os.path.isfile(f)
-                and accessible(f)
-            ):
-                with open(f, mode=mode, encoding=encoding) as fp:
-                    lines += fp.readlines()
+            if os.path.isfile(f):
+                ext = Path(f).suffix.lower().lstrip(".")
+                exts = [str(e).lower().lstrip(".") for e in file_type]
+                if ext in exts and os.access(f, os.R_OK):
+                    with open(f, mode=mode, encoding=encoding) as fp:
+                        lines += fp.readlines()
         return lines
 
     def writelines(self, content, mode="w", encoding="utf-8", **kwargs):
